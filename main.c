@@ -109,7 +109,6 @@ enum bool update() {
         return true;
     }
     update_draw()
-    return false;
 }
 void init() {
     term_init();
