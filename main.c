@@ -81,6 +81,12 @@ void nodes_init() {
 }
 
 enum bool cmd(char ch) {
+    switch (ch) {
+        case 'q':
+            return true;
+        default:
+            return false;
+    }
 }
 
 enum bool input(char ch) {
