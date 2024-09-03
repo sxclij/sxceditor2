@@ -146,7 +146,13 @@ enum bool input_update() {
     }
     return false;
 }
+
+void draw_clear() {
+    write(STDOUT_FILENO, "\x1b[2J", 4);
+    write(STDOUT_FILENO, "\x1b[1;1H", 7);
+}
 void update_draw() {
+    draw_clear();
     write(STDOUT_FILENO, "\x1b[1;1H", 7);
     if (global.mode == mode_insert) {
         write(STDOUT_FILENO, "INSERT_MODE\n", 12);
