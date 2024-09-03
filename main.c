@@ -88,6 +88,9 @@ enum bool input_normal(char ch) {
     switch (ch) {
         case 'q':
             return true;
+        case 'i':
+            global.mode = mode_insert;
+            return false;
         default:
             return false;
     }
