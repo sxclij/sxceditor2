@@ -11,10 +11,10 @@ enum bool {
     true = 1
 };
 enum mode {
-    normal,
-    insert,
-    cmd,
-    raw,
+    mode_normal,
+    mode_insert,
+    mode_cmd,
+    mode_raw,
 };
 struct t_term {
     struct termios old;
@@ -101,12 +101,14 @@ enum bool input_insert(char ch) {
     return false;
 }
 enum bool input(char ch) {
-    if (global.mode == normal) {
+    if (global.mode == mode_normal) {
         return input_normal(ch);
     }
-    if (global.mode == insert) {
+    if (global.mode == mode_insert) {
         return input_insert(ch);
     }
+    if (global.mode == mode_cmd) {
+
     nodes_insert(ch);
     if (ch == 'q') {
         return true;
