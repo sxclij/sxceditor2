@@ -148,7 +148,7 @@ enum bool input_update() {
 }
 void update_draw() {
     write(STDOUT_FILENO, "\x1b[1;1H", 7);
-    struct node* node_i = global.nodes.head;
+    struct node* node_i = global.nodes.selector;
     while (node_i->prev != NULL) {
         node_i = node_i->prev;
     }
