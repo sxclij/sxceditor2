@@ -162,9 +162,7 @@ void draw_info() {
         write(STDOUT_FILENO, "NORMAL_MODE\n", 12);
     }
 }
-void update_draw() {
-    draw_clear();
-    draw_info();
+void draw_text() {
     struct node* node_i = global.nodes.selector;
     while (node_i->prev != NULL) {
         node_i = node_i->prev;
@@ -175,6 +173,11 @@ void update_draw() {
         }
         write(STDOUT_FILENO, &node_i->ch, 1);
     }
+}
+void update_draw() {
+    draw_clear();
+    draw_info();
+    draw_text();
     fflush(stdout);
 }
 enum bool update() {
