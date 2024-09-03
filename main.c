@@ -85,6 +85,7 @@ void nodes_init() {
 }
 
 enum bool input_cmd(char ch) {
+    return false;
 }
 enum bool input_normal(char ch) {
     switch (ch) {
@@ -104,7 +105,9 @@ enum bool input_insert(char ch) {
             return false;
         case '\b':
         case 127:
-            nodes_delete(global.nodes.selector->prev);
+            if (global.nodes.selector->prev == NULL) {
+                nodes_delete(global.nodes.selector->prev);
+            }
             return false;
         default:
             nodes_insert(ch);
