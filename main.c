@@ -67,9 +67,6 @@ struct node* nodes_insert(char ch) {
     return this;
 }
 void nodes_delete(struct node* this) {
-    if (this == NULL) {
-        return;
-    }
     struct node* next = this->next;
     struct node* prev = this->prev;
     global.nodes.passive[global.nodes.passive_size++] = this;
