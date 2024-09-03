@@ -80,6 +80,9 @@ void nodes_init() {
     global.nodes.selector = global.nodes.head;
 }
 
+enum bool cmd(char ch) {
+}
+
 enum bool input(char ch) {
     nodes_insert(ch);
     if (ch == 'q') {
