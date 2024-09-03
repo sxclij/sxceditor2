@@ -35,6 +35,7 @@ struct nodes {
 struct global {
     struct t_term term;
     struct nodes nodes;
+    enum mode mode;
 } global;
 
 void term_deinit() {
