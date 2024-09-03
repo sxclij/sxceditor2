@@ -96,12 +96,14 @@ enum bool input_normal(char ch) {
     }
 }
 enum bool input_insert(char ch) {
-    if (ch == '\b') {
-        nodes_delete(global.nodes.selector);
-        return false;
+    switch (ch) {
+        case '\b':
+            nodes_delete(global.nodes.selector);
+            return false;
+        default:
+            nodes_insert(ch);
+            return false;
     }
-    nodes_insert(ch);
-    return false;
 }
 enum bool input(char ch) {
     if (global.mode == mode_normal) {
