@@ -95,12 +95,12 @@ enum bool input_normal(char ch) {
         case 'q':
             return true;
         case 'h':
-            if (global.nodes.selector->prev == NULL) {
+            if (global.nodes.selector->prev != NULL) {
                 global.nodes.selector = global.nodes.selector->prev;
             }
             return false;
         case 'l':
-            if (global.nodes.selector->next == NULL) {
+            if (global.nodes.selector->next != NULL) {
                 global.nodes.selector = global.nodes.selector->next;
             }
             return false;
@@ -153,6 +153,9 @@ void update_draw() {
         node_i = node_i->prev;
     }
     for (; node_i != NULL; node_i = node_i->next) {
+        if(node_i == global.nodes.selector) {
+            write(STDOUT_FILENO, "|", 1);
+        }
         write(STDOUT_FILENO, &node_i->ch, 1);
     }
     fflush(stdout);
