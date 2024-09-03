@@ -148,12 +148,21 @@ enum bool input_update() {
 }
 void update_draw() {
     write(STDOUT_FILENO, "\x1b[1;1H", 7);
+    if (global.mode == mode_insert) {
+        write(STDOUT_FILENO, "INSERT_MODE\n", 12);
+    } else if (global.mode == mode_cmd) {
+        write(STDOUT_FILENO, "CMD_MODE\n", 9);
+    } else if (global.mode == mode_raw) {
+        write(STDOUT_FILENO, "RAW_MODE\n", 9);
+    } else if (global.mode == mode_normal) {
+        write(STDOUT_FILENO, "NORMAL_MODE\n", 12);
+    }
     struct node* node_i = global.nodes.selector;
     while (node_i->prev != NULL) {
         node_i = node_i->prev;
     }
     for (; node_i != NULL; node_i = node_i->next) {
-        if(node_i == global.nodes.selector) {
+        if (node_i == global.nodes.selector) {
             write(STDOUT_FILENO, "|", 1);
         }
         write(STDOUT_FILENO, &node_i->ch, 1);
