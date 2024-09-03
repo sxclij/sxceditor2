@@ -167,11 +167,12 @@ void draw_text() {
     while (node_i->prev != NULL) {
         node_i = node_i->prev;
     }
-    for (; node_i != NULL; node_i = node_i->next) {
+    while (node_i != NULL) {
         if (node_i == global.nodes.selector) {
             write(STDOUT_FILENO, "|", 1);
         }
         write(STDOUT_FILENO, &node_i->ch, 1);
+        node_i = node_i->next;
     }
 }
 void update_draw() {
