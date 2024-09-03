@@ -110,12 +110,6 @@ enum bool input(char ch) {
     if (global.mode == mode_cmd) {
         return input_cmd(ch);
     }
-
-    nodes_insert(ch);
-    if (ch == 'q') {
-        return true;
-    }
-    return false;
 }
 enum bool input_update() {
     char buf[term_capacity];
