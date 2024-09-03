@@ -94,6 +94,13 @@ enum bool input_normal(char ch) {
             return false;
         case 'q':
             return true;
+        case 'h':
+            global.nodes.selector = global.nodes.selector->prev;
+            return false;
+        case 'l':
+            global.nodes.selector = global.nodes.selector->next;
+            return false;
+        case 'j':
         default:
             return false;
     }
