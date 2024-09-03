@@ -85,7 +85,6 @@ void nodes_init() {
 }
 
 enum bool input_cmd(char ch) {
-    
 }
 enum bool input_normal(char ch) {
     switch (ch) {
@@ -100,7 +99,11 @@ enum bool input_normal(char ch) {
 }
 enum bool input_insert(char ch) {
     switch (ch) {
+        case 27:
+            global.mode = mode_normal;
+            return false;
         case '\b':
+        case 127:
             nodes_delete(global.nodes.selector);
             return false;
         default:
