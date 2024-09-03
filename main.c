@@ -80,12 +80,19 @@ void nodes_init() {
     global.nodes.selector = global.nodes.head;
 }
 
+enum bool input(char ch) {
+    nodes_insert(ch);
+    if (ch == 'q') {
+        return true;
+    }
+    return false;
+}
+
 enum bool update_input() {
     char buf[term_capacity];
     size_t n = term_read(buf);
     for (uint32_t i = 0; i < n; i++) {
-        nodes_insert(buf[i]);
-        if (buf[i] == 'q') {
+        if (input(buf[i]) == true) {
             return true;
         }
     }
