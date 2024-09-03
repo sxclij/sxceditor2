@@ -10,6 +10,12 @@ enum bool {
     false = 0,
     true = 1
 };
+enum mode {
+    normal,
+    insert,
+    cmd,
+    raw,
+};
 struct t_term {
     struct termios old;
     struct termios new;
