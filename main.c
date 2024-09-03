@@ -95,10 +95,14 @@ enum bool input_normal(char ch) {
         case 'q':
             return true;
         case 'h':
-            global.nodes.selector = global.nodes.selector->prev;
+            if (global.nodes.selector->prev == NULL) {
+                global.nodes.selector = global.nodes.selector->prev;
+            }
             return false;
         case 'l':
-            global.nodes.selector = global.nodes.selector->next;
+            if (global.nodes.selector->next == NULL) {
+                global.nodes.selector = global.nodes.selector->next;
+            }
             return false;
         case 'j':
         default:
