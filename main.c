@@ -108,6 +108,8 @@ enum bool input(char ch) {
         return input_insert(ch);
     }
     if (global.mode == mode_cmd) {
+        return input_cmd(ch);
+    }
 
     nodes_insert(ch);
     if (ch == 'q') {
