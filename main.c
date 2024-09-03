@@ -105,10 +105,10 @@ void update_draw() {
 }
 enum bool update() {
     if (update_input() == true) {
-        write(STDOUT_FILENO, "quit", 4);
         return true;
     }
-    update_draw()
+    update_draw();
+    return false;
 }
 void init() {
     term_init();
