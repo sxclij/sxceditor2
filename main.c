@@ -151,9 +151,7 @@ void draw_clear() {
     write(STDOUT_FILENO, "\x1b[2J", 4);
     write(STDOUT_FILENO, "\x1b[1;1H", 7);
 }
-void update_draw() {
-    draw_clear();
-    write(STDOUT_FILENO, "\x1b[1;1H", 7);
+void draw_info() {
     if (global.mode == mode_insert) {
         write(STDOUT_FILENO, "INSERT_MODE\n", 12);
     } else if (global.mode == mode_cmd) {
@@ -163,6 +161,10 @@ void update_draw() {
     } else if (global.mode == mode_normal) {
         write(STDOUT_FILENO, "NORMAL_MODE\n", 12);
     }
+}
+void update_draw() {
+    draw_clear();
+    draw_info();
     struct node* node_i = global.nodes.selector;
     while (node_i->prev != NULL) {
         node_i = node_i->prev;
