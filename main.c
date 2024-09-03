@@ -154,12 +154,12 @@ void draw_clear() {
 void draw_info() {
     if (global.mode == mode_insert) {
         write(STDOUT_FILENO, "INSERT_MODE\n", 12);
-    } else if (global.mode == mode_cmd) {
-        write(STDOUT_FILENO, "CMD_MODE\n", 9);
-    } else if (global.mode == mode_raw) {
-        write(STDOUT_FILENO, "RAW_MODE\n", 9);
     } else if (global.mode == mode_normal) {
         write(STDOUT_FILENO, "NORMAL_MODE\n", 12);
+    } else if (global.mode == mode_raw) {
+        write(STDOUT_FILENO, "RAW_MODE\n", 9);
+    } else if (global.mode == mode_cmd) {
+        write(STDOUT_FILENO, "CMD_MODE\n", 9);
     }
 }
 void draw_text() {
