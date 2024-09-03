@@ -101,7 +101,7 @@ enum bool input(char ch) {
     return false;
 }
 
-enum bool update_input() {
+enum bool input_update() {
     char buf[term_capacity];
     size_t n = term_read(buf);
     for (uint32_t i = 0; i < n; i++) {
@@ -123,7 +123,7 @@ void update_draw() {
     fflush(stdout);
 }
 enum bool update() {
-    if (update_input() == true) {
+    if (input_update() == true) {
         return true;
     }
     update_draw();
