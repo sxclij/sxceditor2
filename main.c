@@ -116,7 +116,7 @@ enum bool input_insert(char ch) {
             return false;
         case '\b':
         case 127:
-            if (global.nodes.selector->prev == NULL) {
+            if (global.nodes.selector->prev != NULL) {
                 nodes_delete(global.nodes.selector->prev);
             }
             return false;
