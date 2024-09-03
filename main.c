@@ -84,7 +84,7 @@ void nodes_init() {
     global.nodes.selector = global.nodes.head;
 }
 
-enum bool cmd(char ch) {
+enum bool input_normal(char ch) {
     switch (ch) {
         case 'q':
             return true;
@@ -92,8 +92,21 @@ enum bool cmd(char ch) {
             return false;
     }
 }
-
+enum bool input_insert(char ch) {
+    if (ch == '\b') {
+        nodes_delete(global.nodes.selector);
+        return false;
+    }
+    nodes_insert(ch);
+    return false;
+}
 enum bool input(char ch) {
+    if (global.mode == normal) {
+        return input_normal(ch);
+    }
+    if (global.mode == insert) {
+        return input_insert(ch);
+    }
     nodes_insert(ch);
     if (ch == 'q') {
         return true;
