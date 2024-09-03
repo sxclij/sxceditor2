@@ -84,13 +84,16 @@ void nodes_init() {
     global.nodes.selector = global.nodes.head;
 }
 
+enum bool input_cmd(char ch) {
+    
+}
 enum bool input_normal(char ch) {
     switch (ch) {
-        case 'q':
-            return true;
         case 'i':
             global.mode = mode_insert;
             return false;
+        case 'q':
+            return true;
         default:
             return false;
     }
