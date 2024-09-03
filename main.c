@@ -100,7 +100,6 @@ enum bool input(char ch) {
     }
     return false;
 }
-
 enum bool input_update() {
     char buf[term_capacity];
     size_t n = term_read(buf);
