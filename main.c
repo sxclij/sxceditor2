@@ -104,7 +104,7 @@ enum bool input_insert(char ch) {
             return false;
         case '\b':
         case 127:
-            nodes_delete(global.nodes.selector);
+            nodes_delete(global.nodes.selector->prev);
             return false;
         default:
             nodes_insert(ch);
