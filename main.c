@@ -84,7 +84,7 @@ void nodes_init() {
     global.nodes.cmd_selector = global.nodes.passive[--global.nodes.passive_size];
 }
 
-enum bool file_open(struct node* dst, const char* src) {
+enum bool file_read(struct node* dst, const char* src) {
     FILE* fp = fopen(src, "r");
     if (fp == NULL) {
         return true;
