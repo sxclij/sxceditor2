@@ -28,8 +28,8 @@ struct node {
 struct nodes {
     struct node data[nodes_capacity];
     struct node* passive[nodes_capacity];
-    struct node* head;
-    struct node* selector;
+    struct node* insert_selector;
+    struct node* cmd_selector;
     uint32_t passive_size;
 };
 struct global {
@@ -79,8 +79,8 @@ void nodes_init() {
     for (uint32_t i = 0; i < nodes_capacity; i++) {
         global.nodes.passive[i] = &global.nodes.data[i];
     }
-    global.nodes.head = global.nodes.passive[--global.nodes.passive_size];
-    global.nodes.selector = global.nodes.head;
+    global.nodes.insert_selector = global.nodes.passive[--global.nodes.passive_size];
+    global.nodes.cmd_selector = global.nodes.passive[--global.nodes.passive_size];
 }
 
 enum bool input_cmd(char ch) {
@@ -94,13 +94,13 @@ enum bool input_normal(char ch) {
         case 'q':
             return true;
         case 'h':
-            if (global.nodes.selector->prev != NULL) {
-                global.nodes.selector = global.nodes.selector->prev;
+            if (global.nodes.insert_selector->prev != NULL) {
+                global.nodes.insert_selector = global.nodes.insert_selector->prev;
             }
             return false;
         case 'l':
-            if (global.nodes.selector->next != NULL) {
-                global.nodes.selector = global.nodes.selector->next;
+            if (global.nodes.insert_selector->next != NULL) {
+                global.nodes.insert_selector = global.nodes.insert_selector->next;
             }
             return false;
         case 'j':
@@ -115,12 +115,12 @@ enum bool input_insert(char ch) {
             return false;
         case '\b':
         case 127:
-            if (global.nodes.selector->prev != NULL) {
-                nodes_delete(global.nodes.selector->prev);
+            if (global.nodes.insert_selector->prev != NULL) {
+                nodes_delete(global.nodes.insert_selector->prev);
             }
             return false;
         default:
-            nodes_insert(global.nodes.selector, ch);
+            nodes_insert(global.nodes.insert_selector, ch);
             return false;
     }
 }
@@ -162,12 +162,12 @@ void draw_info() {
     }
 }
 void draw_text() {
-    struct node* node_i = global.nodes.selector;
+    struct node* node_i = global.nodes.insert_selector;
     while (node_i->prev != NULL) {
         node_i = node_i->prev;
     }
     while (node_i != NULL) {
-        if (node_i == global.nodes.selector) {
+        if (node_i == global.nodes.insert_selector) {
             write(STDOUT_FILENO, "|", 1);
         }
         write(STDOUT_FILENO, &node_i->ch, 1);
@@ -201,7 +201,7 @@ int main() {
         if (update() == true) {
             break;
         }
-        usleep(1000);
+        usleep(10000);
     }
     deinit();
     return 0;
