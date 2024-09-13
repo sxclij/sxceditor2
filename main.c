@@ -181,20 +181,26 @@ void draw_text(struct node* this) {
 }
 void draw_info() {
     if (global.mode == mode_insert) {
-        write(STDOUT_FILENO, "INSERT_MODE, ", 13);
+        write(STDOUT_FILENO, "INSERT_MODE", 11);
     } else if (global.mode == mode_normal) {
-        write(STDOUT_FILENO, "NORMAL_MODE, ", 13);
+        write(STDOUT_FILENO, "NORMAL_MODE", 11);
     } else if (global.mode == mode_raw) {
-        write(STDOUT_FILENO, "RAW_MODE, ", 10);
+        write(STDOUT_FILENO, "RAW_MODE", 8);
     } else if (global.mode == mode_cmd) {
-        write(STDOUT_FILENO, "CMD_MODE, ", 10);
+        write(STDOUT_FILENO, "CMD_MODE", 8);
+    }
+}
+void draw_cmd() {
+    if (global.nodes.cmd_selector->prev != NULL) {
+        write(STDOUT_FILENO, ", cmd: ", 7);
+        draw_text(global.nodes.cmd_selector);
     }
 }
 void update_draw() {
     draw_clear();
     draw_info();
-        draw_text(global.nodes.cmd_selector);
-        write(STDOUT_FILENO, "\n", 1);
+    draw_cmd();
+    write(STDOUT_FILENO, "\n", 1);
     draw_text(global.nodes.insert_selector);
     fflush(stdout);
 }
