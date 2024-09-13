@@ -150,19 +150,8 @@ void draw_clear() {
     write(STDOUT_FILENO, "\x1b[2J", 4);
     write(STDOUT_FILENO, "\x1b[1;1H", 7);
 }
-void draw_info() {
-    if (global.mode == mode_insert) {
-        write(STDOUT_FILENO, "INSERT_MODE\n", 12);
-    } else if (global.mode == mode_normal) {
-        write(STDOUT_FILENO, "NORMAL_MODE\n", 12);
-    } else if (global.mode == mode_raw) {
-        write(STDOUT_FILENO, "RAW_MODE\n", 9);
-    } else if (global.mode == mode_cmd) {
-        write(STDOUT_FILENO, "CMD_MODE\n", 9);
-    }
-}
-void draw_text() {
-    struct node* node_i = global.nodes.insert_selector;
+void draw_text(struct node* this) {
+    struct node* node_i = this;
     while (node_i->prev != NULL) {
         node_i = node_i->prev;
     }
@@ -174,10 +163,21 @@ void draw_text() {
         node_i = node_i->next;
     }
 }
+void draw_info() {
+    if (global.mode == mode_insert) {
+        write(STDOUT_FILENO, "INSERT_MODE\n", 12);
+    } else if (global.mode == mode_normal) {
+        write(STDOUT_FILENO, "NORMAL_MODE\n", 12);
+    } else if (global.mode == mode_raw) {
+        write(STDOUT_FILENO, "RAW_MODE\n", 9);
+    } else if (global.mode == mode_cmd) {
+        write(STDOUT_FILENO, "CMD_MODE\n", 9);
+    }
+}
 void update_draw() {
     draw_clear();
     draw_info();
-    draw_text();
+    draw_text(global.nodes.insert_selector);
     fflush(stdout);
 }
 enum bool update() {
