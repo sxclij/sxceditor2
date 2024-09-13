@@ -87,6 +87,9 @@ void nodes_clear( struct node* this) {
 }
 void nodes_to_str(char* dst, struct node* src) {
     struct node* itr = src;
+    while(itr->prev != NULL) {
+        itr = itr->prev;
+    }
     for(uint32_t i = 0; itr != NULL; i++) {
         dst[i] = itr->ch;
         itr = itr->next;
@@ -117,16 +120,17 @@ enum bool file_read(struct node* dst, const char* src) {
     return false;
 }
 
-enum bool cmd_exec(struct node* src) {
+enum bool cmd_exec(struct node* this) {
     char buf1[buf_capacity];
     char buf2[buf_capacity];
     uint32_t i;
-    nodes_to_str(buf1, src);
+    nodes_to_str(buf1, this);
     for(i=0; buf1[i] != ' ' && buf1[i] != '\0'; i++) {
         buf2[i] = buf1[i];
     }
     buf2[i++] = '\0';
     if(strcmp(buf2, "exit") == 0) {
+        white("sxceditor exited. ");
         return true;
     }
     if(strcmp(buf2, "open") == 0) {
@@ -142,9 +146,6 @@ enum bool input_cmd(char ch) {
             global.mode = mode_normal;
             return false;
         case '\n':
-            while(global.nodes.cmd_selector->prev != NULL) {
-                global.nodes.cmd_selector = global.nodes.cmd_selector->prev;
-            }
             if(cmd_exec(global.nodes.cmd_selector)) {
                 return true;
             }else {
