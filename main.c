@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -75,10 +76,20 @@ void nodes_delete(struct node* this) {
         prev->next = next;
     }
 }
+void nodes_clear( struct node* this) {
+    struct node* itr = this;
+    while (itr->next != NULL) {
+        itr = itr->next;
+    }
+    while (itr->prev != NULL) {
+        nodes_delete(itr->prev);
+    }
+}
 void nodes_to_str(char* dst, struct node* src) {
     struct node* itr = src;
     for(uint32_t i = 0; itr != NULL; i++) {
         dst[i] = itr->ch;
+        itr = itr->next;
     }
 }
 void nodes_init() {
@@ -107,8 +118,22 @@ enum bool file_read(struct node* dst, const char* src) {
 }
 
 enum bool cmd_exec(struct node* src) {
-    char buf[buf_capacity];
-
+    char buf1[buf_capacity];
+    char buf2[buf_capacity];
+    uint32_t i;
+    nodes_to_str(buf1, src);
+    for(i=0; buf1[i] != ' ' && buf1[i] != '\0'; i++) {
+        buf2[i] = buf1[i];
+    }
+    buf2[i++] = '\0';
+    if(strcmp(buf2, "exit") == 0) {
+        return true;
+    }
+    if(strcmp(buf2, "open") == 0) {
+        nodes_clear(global.nodes.insert_selector);
+        return file_read(global.nodes.insert_selector, buf1 + i);
+    }
+    return false;
 }
 
 enum bool input_cmd(char ch) {
@@ -117,7 +142,16 @@ enum bool input_cmd(char ch) {
             global.mode = mode_normal;
             return false;
         case '\n':
-            return cmd_exec(global.nodes.cmd_selector);
+            while(global.nodes.cmd_selector->prev != NULL) {
+                global.nodes.cmd_selector = global.nodes.cmd_selector->prev;
+            }
+            if(cmd_exec(global.nodes.cmd_selector)) {
+                return true;
+            }else {
+                nodes_clear(global.nodes.cmd_selector);
+                global.mode = mode_normal;
+                return false;
+            }
         case '\b':
         case 127:
             if (global.nodes.cmd_selector->prev != NULL) {
