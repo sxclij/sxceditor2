@@ -75,6 +75,12 @@ void nodes_delete(struct node* this) {
         prev->next = next;
     }
 }
+void nodes_to_str(char* dst, struct node* src) {
+    struct node* itr = src;
+    for(uint32_t i = 0; itr != NULL; i++) {
+        dst[i] = itr->ch;
+    }
+}
 void nodes_init() {
     global.nodes.passive_size = nodes_capacity;
     for (uint32_t i = 0; i < nodes_capacity; i++) {
@@ -101,6 +107,8 @@ enum bool file_read(struct node* dst, const char* src) {
 }
 
 enum bool cmd_exec(struct node* src) {
+    char buf[buf_capacity];
+
 }
 
 enum bool input_cmd(char ch) {
@@ -109,8 +117,7 @@ enum bool input_cmd(char ch) {
             global.mode = mode_normal;
             return false;
         case '\n':
-            cmd_exec(global.nodes.cmd_selector);
-            return false;
+            return cmd_exec(global.nodes.cmd_selector);
         case '\b':
         case 127:
             if (global.nodes.cmd_selector->prev != NULL) {
