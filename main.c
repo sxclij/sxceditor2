@@ -55,10 +55,10 @@ void term_init() {
 
 struct node* nodes_insert(struct node* next, char ch) {
     struct node* this = global.nodes.passive[--global.nodes.passive_size];
-    struct node* prev = global.nodes.selector->prev;
+    struct node* prev = next->prev;
     this->ch = ch;
-    this->next = global.nodes.selector;
-    this->prev = global.nodes.selector->prev;
+    this->next = next;
+    this->prev = prev;
     next->prev = this;
     if (prev != NULL) {
         prev->next = this;
@@ -73,6 +73,9 @@ void nodes_delete(struct node* this) {
     if (prev != NULL) {
         prev->next = next;
     }
+}
+void nodes_clear(struct nodes* this) {
+
 }
 void nodes_init() {
     global.nodes.passive_size = nodes_capacity;
@@ -120,7 +123,7 @@ enum bool input_insert(char ch) {
             }
             return false;
         default:
-            nodes_insert(ch);
+            nodes_insert(global.nodes.selector, ch);
             return false;
     }
 }
