@@ -106,10 +106,10 @@ void nodes_init() {
     global.nodes.cmd_selector = global.nodes.passive[--global.nodes.passive_size];
 }
 
-enum bool file_read(struct node* dst, const char* src) {
-    FILE* fp = fopen(src, "r");
+enum bool file_read(struct node* dst, const char* path) {
+    FILE* fp = fopen(path, "r");
     if (fp == NULL) {
-        printf("failed to open %s. ", src);
+        printf("failed to open %s. ", path);
         return true;
     }
     while (1) {
@@ -122,12 +122,12 @@ enum bool file_read(struct node* dst, const char* src) {
     fclose(fp);
     return false;
 }
-enum bool file_write(struct node* src, const char* dst) {
+enum bool file_write(struct node* src, const char* path) {
     char buf[buf_capacity];
     nodes_to_str(buf, src);
-    FILE* fp = fopen(dst, "w");
+    FILE* fp = fopen(path, "w");
     if (fp == NULL) {
-        printf("failed to open %s. ", dst);
+        printf("failed to open %s. ", path);
         return true;
     }
     fwrite(buf, 1, strlen(buf), fp);
