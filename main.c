@@ -74,9 +74,6 @@ void nodes_delete(struct node* this) {
         prev->next = next;
     }
 }
-void nodes_clear(struct nodes* this) {
-
-}
 void nodes_init() {
     global.nodes.passive_size = nodes_capacity;
     for (uint32_t i = 0; i < nodes_capacity; i++) {
@@ -95,6 +92,7 @@ enum bool input_normal(char ch) {
             global.mode = mode_insert;
             return false;
         case 'q':
+        nodes_clear(global.nodes.selector);
             return true;
         case 'h':
             if (global.nodes.selector->prev != NULL) {
