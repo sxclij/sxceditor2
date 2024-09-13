@@ -5,6 +5,7 @@
 
 #define term_capacity 65536
 #define nodes_capacity 65536
+#define buf_capacity 65536
 
 enum bool {
     false = 0,
@@ -83,10 +84,32 @@ void nodes_init() {
     global.nodes.cmd_selector = global.nodes.passive[--global.nodes.passive_size];
 }
 
+enum bool file_open(struct node* dst, const char* src) {
+    FILE* fp = fopen(src, "r");
+    if (fp == NULL) {
+        return true;
+    }
+    while (1) {
+        int ch = fgetc(fp);
+        if (ch == EOF) {
+            break;
+        }
+        nodes_insert(dst, ch);
+    }
+    fclose(fp);
+    return false;
+}
+
+enum bool cmd_exec(struct node* src) {
+}
+
 enum bool input_cmd(char ch) {
     switch (ch) {
         case 27:
             global.mode = mode_normal;
+            return false;
+        case '\n':
+            cmd_exec(global.nodes.cmd_selector);
             return false;
         case '\b':
         case 127:
