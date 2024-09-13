@@ -107,6 +107,7 @@ void nodes_init() {
 enum bool file_read(struct node* dst, const char* src) {
     FILE* fp = fopen(src, "r");
     if (fp == NULL) {
+        printf("failed to open %s. ", src);
         return true;
     }
     while (1) {
@@ -129,8 +130,8 @@ enum bool cmd_exec(struct node* this) {
         buf2[i] = buf1[i];
     }
     buf2[i++] = '\0';
-    if(strcmp(buf2, "exit") == 0) {
-        white("sxceditor exited. ");
+    if(strcmp(buf2, "exit") == 0 || strcmp(buf2, "quit") == 0) {
+        printf("sxceditor exited. ");
         return true;
     }
     if(strcmp(buf2, "open") == 0) {
@@ -246,13 +247,13 @@ void draw_text(struct node* this) {
 }
 void draw_info() {
     if (global.mode == mode_insert) {
-        write(STDOUT_FILENO, "INSERT_MODE", 11);
+        write(STDOUT_FILENO, "[INSERT_MODE]", 13);
     } else if (global.mode == mode_normal) {
-        write(STDOUT_FILENO, "NORMAL_MODE", 11);
+        write(STDOUT_FILENO, "[NORMAL_MODE]", 13);
     } else if (global.mode == mode_raw) {
-        write(STDOUT_FILENO, "RAW_MODE", 8);
+        write(STDOUT_FILENO, "[RAW_MODE]", 10);
     } else if (global.mode == mode_cmd) {
-        write(STDOUT_FILENO, "CMD_MODE", 8);
+        write(STDOUT_FILENO, "[CMD_MODE]", 10);
     }
 }
 void draw_cmd() {
