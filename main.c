@@ -84,12 +84,28 @@ void nodes_init() {
 }
 
 enum bool input_cmd(char ch) {
-    return false;
+    switch (ch) {
+        case 27:
+            global.mode = mode_normal;
+            return false;
+        case '\b':
+        case 127:
+            if (global.nodes.cmd_selector->prev != NULL) {
+                nodes_delete(global.nodes.cmd_selector->prev);
+            }
+            return false;
+        default:
+            nodes_insert(global.nodes.cmd_selector, ch);
+            return false;
+    }
 }
 enum bool input_normal(char ch) {
     switch (ch) {
         case 'i':
             global.mode = mode_insert;
+            return false;
+        case ':':
+            global.mode = mode_cmd;
             return false;
         case 'q':
             return true;
@@ -165,18 +181,20 @@ void draw_text(struct node* this) {
 }
 void draw_info() {
     if (global.mode == mode_insert) {
-        write(STDOUT_FILENO, "INSERT_MODE\n", 12);
+        write(STDOUT_FILENO, "INSERT_MODE, ", 13);
     } else if (global.mode == mode_normal) {
-        write(STDOUT_FILENO, "NORMAL_MODE\n", 12);
+        write(STDOUT_FILENO, "NORMAL_MODE, ", 13);
     } else if (global.mode == mode_raw) {
-        write(STDOUT_FILENO, "RAW_MODE\n", 9);
+        write(STDOUT_FILENO, "RAW_MODE, ", 10);
     } else if (global.mode == mode_cmd) {
-        write(STDOUT_FILENO, "CMD_MODE\n", 9);
+        write(STDOUT_FILENO, "CMD_MODE, ", 10);
     }
 }
 void update_draw() {
     draw_clear();
     draw_info();
+        draw_text(global.nodes.cmd_selector);
+        write(STDOUT_FILENO, "\n", 1);
     draw_text(global.nodes.insert_selector);
     fflush(stdout);
 }
