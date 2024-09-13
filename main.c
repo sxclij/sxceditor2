@@ -38,11 +38,11 @@ struct global {
     enum mode mode;
 } global;
 
-void term_deinit() {
-    tcsetattr(STDIN_FILENO, TCSANOW, &global.term.old);
-}
 size_t term_read(char* dst) {
     return read(STDIN_FILENO, dst, term_capacity);
+}
+void term_deinit() {
+    tcsetattr(STDIN_FILENO, TCSANOW, &global.term.old);
 }
 void term_init() {
     tcgetattr(STDIN_FILENO, &global.term.old);
@@ -53,9 +53,8 @@ void term_init() {
     tcsetattr(STDIN_FILENO, TCSANOW, &global.term.new);
 }
 
-struct node* nodes_insert(char ch) {
+struct node* nodes_insert(struct node* next, char ch) {
     struct node* this = global.nodes.passive[--global.nodes.passive_size];
-    struct node* next = global.nodes.selector;
     struct node* prev = global.nodes.selector->prev;
     this->ch = ch;
     this->next = global.nodes.selector;
