@@ -92,7 +92,6 @@ enum bool input_normal(char ch) {
             global.mode = mode_insert;
             return false;
         case 'q':
-        nodes_clear(global.nodes.selector);
             return true;
         case 'h':
             if (global.nodes.selector->prev != NULL) {
