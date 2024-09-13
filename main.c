@@ -76,7 +76,7 @@ void nodes_delete(struct node* this) {
         prev->next = next;
     }
 }
-void nodes_clear( struct node* this) {
+void nodes_clear(struct node* this) {
     struct node* itr = this;
     while (itr->next != NULL) {
         itr = itr->next;
@@ -87,13 +87,15 @@ void nodes_clear( struct node* this) {
 }
 void nodes_to_str(char* dst, struct node* src) {
     struct node* itr = src;
-    while(itr->prev != NULL) {
+    uint32_t i;
+    while (itr->prev != NULL) {
         itr = itr->prev;
     }
-    for(uint32_t i = 0; itr != NULL; i++) {
+    for (i = 0; itr != NULL; i++) {
         dst[i] = itr->ch;
         itr = itr->next;
     }
+    dst[i + 1] = '\0';
 }
 void nodes_init() {
     global.nodes.passive_size = nodes_capacity;
@@ -120,23 +122,38 @@ enum bool file_read(struct node* dst, const char* src) {
     fclose(fp);
     return false;
 }
+enum bool file_write(struct node* src, const char* dst) {
+    char buf[buf_capacity];
+    nodes_to_str(buf, src);
+    FILE* fp = fopen(dst, "w");
+    if (fp == NULL) {
+        printf("failed to open %s. ", dst);
+        return true;
+    }
+    fwrite(buf, 1, strlen(buf), fp);
+    fclose(fp);
+    return false;
+}
 
 enum bool cmd_exec(struct node* this) {
     char buf1[buf_capacity];
     char buf2[buf_capacity];
     uint32_t i;
     nodes_to_str(buf1, this);
-    for(i=0; buf1[i] != ' ' && buf1[i] != '\0'; i++) {
+    for (i = 0; buf1[i] != ' ' && buf1[i] != '\0'; i++) {
         buf2[i] = buf1[i];
     }
     buf2[i++] = '\0';
-    if(strcmp(buf2, "exit") == 0 || strcmp(buf2, "quit") == 0) {
+    if (strcmp(buf2, "exit") == 0 || strcmp(buf2, "quit") == 0) {
         printf("sxceditor exited. ");
         return true;
     }
-    if(strcmp(buf2, "open") == 0) {
+    if (strcmp(buf2, "open") == 0) {
         nodes_clear(global.nodes.insert_selector);
         return file_read(global.nodes.insert_selector, buf1 + i);
+    }
+    if (strcmp(buf2, "save") == 0) {
+        return file_write(global.nodes.insert_selector, buf1 + i);
     }
     return false;
 }
@@ -147,9 +164,9 @@ enum bool input_cmd(char ch) {
             global.mode = mode_normal;
             return false;
         case '\n':
-            if(cmd_exec(global.nodes.cmd_selector)) {
+            if (cmd_exec(global.nodes.cmd_selector)) {
                 return true;
-            }else {
+            } else {
                 nodes_clear(global.nodes.cmd_selector);
                 global.mode = mode_normal;
                 return false;
