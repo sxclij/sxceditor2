@@ -158,48 +158,24 @@ enum bool cmd_exec(struct node* this) {
     return false;
 }
 
-enum bool input_cmd(char ch) {
-    switch (ch) {
-        case 27:
-            global.mode = mode_normal;
-            return false;
-        case '\n':
-            if (cmd_exec(global.nodes.cmd_selector)) {
-                return true;
-            } else {
-                nodes_clear(global.nodes.cmd_selector);
-                global.mode = mode_normal;
-                return false;
-            }
-        case '\b':
-        case 127:
-            if (global.nodes.cmd_selector->prev != NULL) {
-                nodes_delete(global.nodes.cmd_selector->prev);
-            }
-            return false;
-        default:
-            nodes_insert(global.nodes.cmd_selector, ch);
-            return false;
-    }
-}
-enum bool input_normal(char ch) {
+enum bool input_normal(struct global* global, char ch) {
     switch (ch) {
         case 'i':
-            global.mode = mode_insert;
+            global->mode = mode_insert;
             return false;
         case ':':
-            global.mode = mode_cmd;
+            global->mode = mode_cmd;
             return false;
         case 'q':
             return true;
         case 'h':
-            if (global.nodes.insert_selector->prev != NULL) {
-                global.nodes.insert_selector = global.nodes.insert_selector->prev;
+            if (global->nodes.insert_selector->prev != NULL) {
+                global->nodes.insert_selector = global->nodes.insert_selector->prev;
             }
             return false;
         case 'l':
-            if (global.nodes.insert_selector->next != NULL) {
-                global.nodes.insert_selector = global.nodes.insert_selector->next;
+            if (global->nodes.insert_selector->next != NULL) {
+                global->nodes.insert_selector = global->nodes.insert_selector->next;
             }
             return false;
         case 'j':
@@ -207,38 +183,62 @@ enum bool input_normal(char ch) {
             return false;
     }
 }
-enum bool input_insert(char ch) {
+enum bool input_cmd(struct global* global, char ch) {
     switch (ch) {
         case 27:
-            global.mode = mode_normal;
+            global->mode = mode_normal;
             return false;
+        case '\n':
+            if (cmd_exec(global->nodes.cmd_selector)) {
+                return true;
+            } else {
+                nodes_clear(global->nodes.cmd_selector);
+                global->mode = mode_normal;
+                return false;
+            }
         case '\b':
         case 127:
-            if (global.nodes.insert_selector->prev != NULL) {
-                nodes_delete(global.nodes.insert_selector->prev);
+            if (global->nodes.cmd_selector->prev != NULL) {
+                nodes_delete(global->nodes.cmd_selector->prev);
             }
             return false;
         default:
-            nodes_insert(global.nodes.insert_selector, ch);
+            nodes_insert(global->nodes.cmd_selector, ch);
             return false;
     }
 }
-enum bool input(char ch) {
-    if (global.mode == mode_normal) {
-        return input_normal(ch);
-    }
-    if (global.mode == mode_insert) {
-        return input_insert(ch);
-    }
-    if (global.mode == mode_cmd) {
-        return input_cmd(ch);
+enum bool input_insert(struct global* global, char ch) {
+    switch (ch) {
+        case 27:
+            global->mode = mode_normal;
+            return false;
+        case '\b':
+        case 127:
+            if (global->nodes.insert_selector->prev != NULL) {
+                nodes_delete(global->nodes.insert_selector->prev);
+            }
+            return false;
+        default:
+            nodes_insert(global->nodes.insert_selector, ch);
+            return false;
     }
 }
-enum bool input_update() {
+enum bool input(struct global* global, char ch) {
+    if (global->mode == mode_normal) {
+        return input_normal(global, ch);
+    }
+    if (global->mode == mode_insert) {
+        return input_insert(global, ch);
+    }
+    if (global->mode == mode_cmd) {
+        return input_cmd(global, ch);
+    }
+}
+enum bool input_update(struct global* global) {
     char buf[term_capacity];
     uint32_t n = term_read(buf);
     for (uint32_t i = 0; i < n; i++) {
-        if (input(buf[i]) == true) {
+        if (input(global, buf[i]) == true) {
             return true;
         }
     }
