@@ -287,11 +287,11 @@ void update_draw() {
     draw_text(global.nodes.insert_selector);
     fflush(stdout);
 }
-enum bool update() {
-    if (input_update() == true) {
+enum bool update(struct global* global) {
+    if (input_update(global) == true) {
         return true;
     }
-    update_draw();
+    update_draw(global);
     return false;
 }
 void init(struct global* global) {
@@ -306,7 +306,7 @@ int main() {
     struct global global;
     init(&global);
     while (1) {
-        if (update() == true) {
+        if (update(&global) == true) {
             break;
         }
         usleep(10000);
