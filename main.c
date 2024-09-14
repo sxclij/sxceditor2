@@ -198,6 +198,21 @@ enum bool input_normal(struct global* global, char ch) {
             }
             return false;
         case 'k':
+            for(i=0;global->nodes.insert_selector->prev != NULL; i++) {
+                if (global->nodes.insert_selector->prev->ch == '\n') {
+                    break;
+                }
+                global->nodes.insert_selector = global->nodes.insert_selector->prev;
+            }
+            while (global->nodes.insert_selector->next != NULL) {
+                if (global->nodes.insert_selector->ch == '\n') {
+                    break;
+                }
+                global->nodes.insert_selector = global->nodes.insert_selector->next;
+            }
+            for(j=0; j<i+1 && global->nodes.insert_selector->next != NULL && global->nodes.insert_selector->next->ch != '\n'; j++) {
+                global->nodes.insert_selector = global->nodes.insert_selector->next;
+            }
             return false;
         default:
             return false;
