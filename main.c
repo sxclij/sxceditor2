@@ -97,13 +97,13 @@ void nodes_to_str(char* dst, struct node* src) {
     }
     dst[i + 1] = '\0';
 }
-void nodes_init() {
-    global.nodes.passive_size = nodes_capacity;
+void nodes_init(struct nodes* nodes) {
+    nodes->passive_size = nodes_capacity;
     for (uint32_t i = 0; i < nodes_capacity; i++) {
-        global.nodes.passive[i] = &global.nodes.data[i];
+        nodes->passive[i] = &nodes->data[i];
     }
-    global.nodes.insert_selector = global.nodes.passive[--global.nodes.passive_size];
-    global.nodes.cmd_selector = global.nodes.passive[--global.nodes.passive_size];
+    nodes->insert_selector = nodes->passive[--nodes->passive_size];
+    nodes->cmd_selector = nodes->passive[--nodes->passive_size];
 }
 
 enum bool file_read(struct node* dst, const char* path) {
@@ -296,7 +296,7 @@ enum bool update() {
 }
 void init(struct global* global) {
     term_init(&global->term);
-    nodes_init();
+    nodes_init(&global->nodes);
 }
 void deinit(struct global* global) {
     term_deinit(&global->term);
