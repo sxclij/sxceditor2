@@ -109,7 +109,6 @@ void nodes_init(struct nodes* nodes) {
 enum bool file_read(struct nodes* nodes, struct node* dst, const char* path) {
     FILE* fp = fopen(path, "r");
     if (fp == NULL) {
-        printf("failed to open %s. ", path);
         return true;
     }
     while (1) {
@@ -127,7 +126,6 @@ enum bool file_write(const char* path, struct node* src) {
     nodes_to_str(buf, src);
     FILE* fp = fopen(path, "w");
     if (fp == NULL) {
-        printf("failed to open %s. ", path);
         return true;
     }
     fwrite(buf, 1, strlen(buf), fp);
@@ -145,7 +143,6 @@ enum bool cmd_exec(struct global* global, struct node* this) {
     }
     buf2[i++] = '\0';
     if (strcmp(buf2, "exit") == 0 || strcmp(buf2, "quit") == 0) {
-        printf("sxceditor exited. ");
         return true;
     }
     if (strcmp(buf2, "open") == 0) {
@@ -167,7 +164,6 @@ enum bool input_normal(struct global* global, char ch) {
             global->mode = mode_cmd;
             return false;
         case 'q':
-            printf("sxceditor exited. ");
             return true;
         case 'h':
             if (global->nodes.insert_selector->prev != NULL) {
