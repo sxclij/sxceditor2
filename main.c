@@ -156,6 +156,7 @@ enum bool cmd_exec(struct global* global, struct node* this) {
 }
 
 enum bool input_normal(struct global* global, char ch) {
+    uint32_t i, j;
     switch (ch) {
         case 'i':
             global->mode = mode_insert;
@@ -176,6 +177,28 @@ enum bool input_normal(struct global* global, char ch) {
             }
             return false;
         case 'j':
+            for(i=0;global->nodes.insert_selector->prev != NULL; i++) {
+                if (global->nodes.insert_selector->prev->ch == '\n') {
+                    break;
+                }
+                global->nodes.insert_selector = global->nodes.insert_selector->prev;
+            }
+            if (global->nodes.insert_selector->prev == NULL) {
+                return false;
+            }
+            global->nodes.insert_selector = global->nodes.insert_selector->prev;
+            while (global->nodes.insert_selector->prev != NULL) {
+                if (global->nodes.insert_selector->prev->ch == '\n') {
+                    break;
+                }
+                global->nodes.insert_selector = global->nodes.insert_selector->prev;
+            }
+            for(j=0; j<i && global->nodes.insert_selector->next != NULL && global->nodes.insert_selector->next->ch != '\n'; j++) {
+                global->nodes.insert_selector = global->nodes.insert_selector->next;
+            }
+            return false;
+        case 'k':
+            return false;
         default:
             return false;
     }
