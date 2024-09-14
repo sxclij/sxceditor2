@@ -18,7 +18,7 @@ enum mode {
     mode_cmd,
     mode_raw,
 };
-struct t_term {
+struct term {
     struct termios old;
     struct termios new;
 };
@@ -35,24 +35,24 @@ struct nodes {
     uint32_t passive_size;
 };
 struct global {
-    struct t_term term;
+    struct term term;
     struct nodes nodes;
     enum mode mode;
-} global;
+};
 
-size_t term_read(char* dst) {
+uint32_t term_read(char* dst) {
     return read(STDIN_FILENO, dst, term_capacity);
 }
-void term_deinit() {
-    tcsetattr(STDIN_FILENO, TCSANOW, &global.term.old);
+void term_deinit(struct term* term) {
+    tcsetattr(STDIN_FILENO, TCSANOW, &term->old);
 }
-void term_init() {
-    tcgetattr(STDIN_FILENO, &global.term.old);
-    global.term.new = global.term.old;
-    global.term.new.c_lflag &= ~(ICANON | ECHO);
-    global.term.new.c_cc[VMIN] = 0;
-    global.term.new.c_cc[VTIME] = 0;
-    tcsetattr(STDIN_FILENO, TCSANOW, &global.term.new);
+void term_init(struct term* term) {
+    tcgetattr(STDIN_FILENO, &term->old);
+    term->new = term->old;
+    term->new.c_lflag &= ~(ICANON | ECHO);
+    term->new.c_cc[VMIN] = 0;
+    term->new.c_cc[VTIME] = 0;
+    tcsetattr(STDIN_FILENO, TCSANOW, &term->new);
 }
 
 struct node* nodes_insert(struct node* next, char ch) {
@@ -236,7 +236,7 @@ enum bool input(char ch) {
 }
 enum bool input_update() {
     char buf[term_capacity];
-    size_t n = term_read(buf);
+    uint32_t n = term_read(buf);
     for (uint32_t i = 0; i < n; i++) {
         if (input(buf[i]) == true) {
             return true;
@@ -294,22 +294,23 @@ enum bool update() {
     update_draw();
     return false;
 }
-void init() {
-    term_init();
+void init(struct global* global) {
+    term_init(&global->term);
     nodes_init();
 }
-void deinit() {
-    term_deinit();
+void deinit(struct global* global) {
+    term_deinit(&global->term);
 }
 
 int main() {
-    init();
+    struct global global;
+    init(&global);
     while (1) {
         if (update() == true) {
             break;
         }
         usleep(10000);
     }
-    deinit();
+    deinit(&global);
     return 0;
 }
