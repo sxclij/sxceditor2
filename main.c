@@ -167,6 +167,7 @@ enum bool input_normal(struct global* global, char ch) {
             global->mode = mode_cmd;
             return false;
         case 'q':
+            printf("sxceditor exited. ");
             return true;
         case 'h':
             if (global->nodes.insert_selector->prev != NULL) {
@@ -189,21 +190,21 @@ enum bool input_cmd(struct global* global, char ch) {
             global->mode = mode_normal;
             return false;
         case '\n':
-            if (cmd_exec(global->nodes.cmd_selector)) {
+            if (cmd_exec(global, global->nodes.cmd_selector)) {
                 return true;
             } else {
-                nodes_clear(global->nodes.cmd_selector);
+                nodes_clear(&global->nodes, global->nodes.cmd_selector);
                 global->mode = mode_normal;
                 return false;
             }
         case '\b':
         case 127:
             if (global->nodes.cmd_selector->prev != NULL) {
-                nodes_delete(global->nodes.cmd_selector->prev);
+                nodes_delete(&global->nodes, global->nodes.cmd_selector->prev);
             }
             return false;
         default:
-            nodes_insert(global->nodes.cmd_selector, ch);
+            nodes_insert(&global->nodes, global->nodes.cmd_selector, ch);
             return false;
     }
 }
@@ -215,11 +216,11 @@ enum bool input_insert(struct global* global, char ch) {
         case '\b':
         case 127:
             if (global->nodes.insert_selector->prev != NULL) {
-                nodes_delete(global->nodes.insert_selector->prev);
+                nodes_delete(&global->nodes, global->nodes.insert_selector->prev);
             }
             return false;
         default:
-            nodes_insert(global->nodes.insert_selector, ch);
+            nodes_insert(&global->nodes,global->nodes.insert_selector, ch);
             return false;
     }
 }
@@ -249,42 +250,42 @@ void draw_clear() {
     write(STDOUT_FILENO, "\x1b[2J", 4);
     write(STDOUT_FILENO, "\x1b[1;1H", 7);
 }
-void draw_text(struct node* this) {
-    struct node* node_i = this;
-    while (node_i->prev != NULL) {
-        node_i = node_i->prev;
+void draw_text(struct node* insert_selector) {
+    struct node* itr = insert_selector;
+    while (itr->prev != NULL) {
+        itr = itr->prev;
     }
-    while (node_i != NULL) {
-        if (node_i == global.nodes.insert_selector) {
+    while (itr != NULL) {
+        if (itr == insert_selector) {
             write(STDOUT_FILENO, "|", 1);
         }
-        write(STDOUT_FILENO, &node_i->ch, 1);
-        node_i = node_i->next;
+        write(STDOUT_FILENO, &itr->ch, 1);
+        itr = itr->next;
     }
 }
-void draw_info() {
-    if (global.mode == mode_insert) {
+void draw_info(enum mode mode) {
+    if (mode == mode_insert) {
         write(STDOUT_FILENO, "[INSERT_MODE]", 13);
-    } else if (global.mode == mode_normal) {
+    } else if (mode == mode_normal) {
         write(STDOUT_FILENO, "[NORMAL_MODE]", 13);
-    } else if (global.mode == mode_raw) {
+    } else if (mode == mode_raw) {
         write(STDOUT_FILENO, "[RAW_MODE]", 10);
-    } else if (global.mode == mode_cmd) {
+    } else if (mode == mode_cmd) {
         write(STDOUT_FILENO, "[CMD_MODE]", 10);
     }
 }
-void draw_cmd() {
-    if (global.nodes.cmd_selector->prev != NULL) {
+void draw_cmd(struct node* cmd_selector) {
+    if (cmd_selector->prev != NULL) {
         write(STDOUT_FILENO, ", cmd: ", 7);
-        draw_text(global.nodes.cmd_selector);
+        draw_text(cmd_selector);
     }
 }
-void update_draw() {
+void update_draw(struct global* global) {
     draw_clear();
-    draw_info();
-    draw_cmd();
+    draw_info(global->mode);
+    draw_cmd(global->nodes.cmd_selector);
     write(STDOUT_FILENO, "\n", 1);
-    draw_text(global.nodes.insert_selector);
+    draw_text(global->nodes.insert_selector);
     fflush(stdout);
 }
 enum bool update(struct global* global) {
