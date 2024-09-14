@@ -304,7 +304,7 @@ void deinit(struct global* global) {
 }
 
 int main() {
-    struct global global;
+    static struct global global;
     init(&global);
     while (1) {
         if (update(&global) == true) {
