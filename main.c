@@ -122,7 +122,7 @@ enum bool file_read(struct nodes* nodes, struct node* dst, const char* path) {
     fclose(fp);
     return false;
 }
-enum bool file_write(struct node* src, const char* path) {
+enum bool file_write(const char* path, struct node* src) {
     char buf[buf_capacity];
     nodes_to_str(buf, src);
     FILE* fp = fopen(path, "w");
@@ -153,7 +153,7 @@ enum bool cmd_exec(struct global* global, struct node* this) {
         return file_read(&global->nodes, global->nodes.insert_selector, buf1 + i);
     }
     if (strcmp(buf2, "save") == 0) {
-        return file_write(global->nodes.insert_selector, buf1 + i);
+        return file_write(buf1 + i, global->nodes.insert_selector);
     }
     return false;
 }
@@ -220,7 +220,7 @@ enum bool input_insert(struct global* global, char ch) {
             }
             return false;
         default:
-            nodes_insert(&global->nodes,global->nodes.insert_selector, ch);
+            nodes_insert(&global->nodes, global->nodes.insert_selector, ch);
             return false;
     }
 }
