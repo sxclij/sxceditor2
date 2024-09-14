@@ -18,7 +18,7 @@ enum mode {
     mode_cmd,
     mode_raw,
 };
-struct t_term {
+struct term {
     struct termios old;
     struct termios new;
 };
@@ -35,28 +35,28 @@ struct nodes {
     uint32_t passive_size;
 };
 struct global {
-    struct t_term term;
+    struct term term;
     struct nodes nodes;
     enum mode mode;
-} global;
+};
 
-size_t term_read(char* dst) {
+uint32_t term_read(char* dst) {
     return read(STDIN_FILENO, dst, term_capacity);
 }
-void term_deinit() {
-    tcsetattr(STDIN_FILENO, TCSANOW, &global.term.old);
+void term_deinit(struct term* term) {
+    tcsetattr(STDIN_FILENO, TCSANOW, &term->old);
 }
-void term_init() {
-    tcgetattr(STDIN_FILENO, &global.term.old);
-    global.term.new = global.term.old;
-    global.term.new.c_lflag &= ~(ICANON | ECHO);
-    global.term.new.c_cc[VMIN] = 0;
-    global.term.new.c_cc[VTIME] = 0;
-    tcsetattr(STDIN_FILENO, TCSANOW, &global.term.new);
+void term_init(struct term* term) {
+    tcgetattr(STDIN_FILENO, &term->old);
+    term->new = term->old;
+    term->new.c_lflag &= ~(ICANON | ECHO);
+    term->new.c_cc[VMIN] = 0;
+    term->new.c_cc[VTIME] = 0;
+    tcsetattr(STDIN_FILENO, TCSANOW, &term->new);
 }
 
-struct node* nodes_insert(struct node* next, char ch) {
-    struct node* this = global.nodes.passive[--global.nodes.passive_size];
+struct node* nodes_insert(struct nodes* nodes, struct node* next, char ch) {
+    struct node* this = nodes->passive[--nodes->passive_size];
     struct node* prev = next->prev;
     this->ch = ch;
     this->next = next;
@@ -67,22 +67,22 @@ struct node* nodes_insert(struct node* next, char ch) {
     }
     return this;
 }
-void nodes_delete(struct node* this) {
+void nodes_delete(struct nodes* nodes, struct node* this) {
     struct node* next = this->next;
     struct node* prev = this->prev;
-    global.nodes.passive[global.nodes.passive_size++] = this;
+    nodes->passive[nodes->passive_size++] = this;
     next->prev = prev;
     if (prev != NULL) {
         prev->next = next;
     }
 }
-void nodes_clear(struct node* this) {
+void nodes_clear(struct nodes* nodes, struct node* this) {
     struct node* itr = this;
     while (itr->next != NULL) {
         itr = itr->next;
     }
     while (itr->prev != NULL) {
-        nodes_delete(itr->prev);
+        nodes_delete(nodes, itr->prev);
     }
 }
 void nodes_to_str(char* dst, struct node* src) {
@@ -97,19 +97,18 @@ void nodes_to_str(char* dst, struct node* src) {
     }
     dst[i + 1] = '\0';
 }
-void nodes_init() {
-    global.nodes.passive_size = nodes_capacity;
+void nodes_init(struct nodes* nodes) {
+    nodes->passive_size = nodes_capacity;
     for (uint32_t i = 0; i < nodes_capacity; i++) {
-        global.nodes.passive[i] = &global.nodes.data[i];
+        nodes->passive[i] = &nodes->data[i];
     }
-    global.nodes.insert_selector = global.nodes.passive[--global.nodes.passive_size];
-    global.nodes.cmd_selector = global.nodes.passive[--global.nodes.passive_size];
+    nodes->insert_selector = nodes->passive[--nodes->passive_size];
+    nodes->cmd_selector = nodes->passive[--nodes->passive_size];
 }
 
-enum bool file_read(struct node* dst, const char* path) {
+enum bool file_read(struct nodes* nodes, struct node* dst, const char* path) {
     FILE* fp = fopen(path, "r");
     if (fp == NULL) {
-        printf("failed to open %s. ", path);
         return true;
     }
     while (1) {
@@ -117,17 +116,16 @@ enum bool file_read(struct node* dst, const char* path) {
         if (ch == EOF) {
             break;
         }
-        nodes_insert(dst, ch);
+        nodes_insert(nodes, dst, ch);
     }
     fclose(fp);
     return false;
 }
-enum bool file_write(struct node* src, const char* path) {
+enum bool file_write(const char* path, struct node* src) {
     char buf[buf_capacity];
     nodes_to_str(buf, src);
     FILE* fp = fopen(path, "w");
     if (fp == NULL) {
-        printf("failed to open %s. ", path);
         return true;
     }
     fwrite(buf, 1, strlen(buf), fp);
@@ -135,7 +133,7 @@ enum bool file_write(struct node* src, const char* path) {
     return false;
 }
 
-enum bool cmd_exec(struct node* this) {
+enum bool cmd_exec(struct global* global, struct node* this) {
     char buf1[buf_capacity];
     char buf2[buf_capacity];
     uint32_t i;
@@ -145,61 +143,36 @@ enum bool cmd_exec(struct node* this) {
     }
     buf2[i++] = '\0';
     if (strcmp(buf2, "exit") == 0 || strcmp(buf2, "quit") == 0) {
-        printf("sxceditor exited. ");
         return true;
     }
     if (strcmp(buf2, "open") == 0) {
-        nodes_clear(global.nodes.insert_selector);
-        return file_read(global.nodes.insert_selector, buf1 + i);
+        nodes_clear(&global->nodes, global->nodes.insert_selector);
+        return file_read(&global->nodes, global->nodes.insert_selector, buf1 + i);
     }
     if (strcmp(buf2, "save") == 0) {
-        return file_write(global.nodes.insert_selector, buf1 + i);
+        return file_write(buf1 + i, global->nodes.insert_selector);
     }
     return false;
 }
 
-enum bool input_cmd(char ch) {
-    switch (ch) {
-        case 27:
-            global.mode = mode_normal;
-            return false;
-        case '\n':
-            if (cmd_exec(global.nodes.cmd_selector)) {
-                return true;
-            } else {
-                nodes_clear(global.nodes.cmd_selector);
-                global.mode = mode_normal;
-                return false;
-            }
-        case '\b':
-        case 127:
-            if (global.nodes.cmd_selector->prev != NULL) {
-                nodes_delete(global.nodes.cmd_selector->prev);
-            }
-            return false;
-        default:
-            nodes_insert(global.nodes.cmd_selector, ch);
-            return false;
-    }
-}
-enum bool input_normal(char ch) {
+enum bool input_normal(struct global* global, char ch) {
     switch (ch) {
         case 'i':
-            global.mode = mode_insert;
+            global->mode = mode_insert;
             return false;
         case ':':
-            global.mode = mode_cmd;
+            global->mode = mode_cmd;
             return false;
         case 'q':
             return true;
         case 'h':
-            if (global.nodes.insert_selector->prev != NULL) {
-                global.nodes.insert_selector = global.nodes.insert_selector->prev;
+            if (global->nodes.insert_selector->prev != NULL) {
+                global->nodes.insert_selector = global->nodes.insert_selector->prev;
             }
             return false;
         case 'l':
-            if (global.nodes.insert_selector->next != NULL) {
-                global.nodes.insert_selector = global.nodes.insert_selector->next;
+            if (global->nodes.insert_selector->next != NULL) {
+                global->nodes.insert_selector = global->nodes.insert_selector->next;
             }
             return false;
         case 'j':
@@ -207,38 +180,62 @@ enum bool input_normal(char ch) {
             return false;
     }
 }
-enum bool input_insert(char ch) {
+enum bool input_cmd(struct global* global, char ch) {
     switch (ch) {
         case 27:
-            global.mode = mode_normal;
+            global->mode = mode_normal;
             return false;
+        case '\n':
+            if (cmd_exec(global, global->nodes.cmd_selector)) {
+                return true;
+            } else {
+                nodes_clear(&global->nodes, global->nodes.cmd_selector);
+                global->mode = mode_normal;
+                return false;
+            }
         case '\b':
         case 127:
-            if (global.nodes.insert_selector->prev != NULL) {
-                nodes_delete(global.nodes.insert_selector->prev);
+            if (global->nodes.cmd_selector->prev != NULL) {
+                nodes_delete(&global->nodes, global->nodes.cmd_selector->prev);
             }
             return false;
         default:
-            nodes_insert(global.nodes.insert_selector, ch);
+            nodes_insert(&global->nodes, global->nodes.cmd_selector, ch);
             return false;
     }
 }
-enum bool input(char ch) {
-    if (global.mode == mode_normal) {
-        return input_normal(ch);
-    }
-    if (global.mode == mode_insert) {
-        return input_insert(ch);
-    }
-    if (global.mode == mode_cmd) {
-        return input_cmd(ch);
+enum bool input_insert(struct global* global, char ch) {
+    switch (ch) {
+        case 27:
+            global->mode = mode_normal;
+            return false;
+        case '\b':
+        case 127:
+            if (global->nodes.insert_selector->prev != NULL) {
+                nodes_delete(&global->nodes, global->nodes.insert_selector->prev);
+            }
+            return false;
+        default:
+            nodes_insert(&global->nodes, global->nodes.insert_selector, ch);
+            return false;
     }
 }
-enum bool input_update() {
+enum bool input(struct global* global, char ch) {
+    if (global->mode == mode_normal) {
+        return input_normal(global, ch);
+    }
+    if (global->mode == mode_insert) {
+        return input_insert(global, ch);
+    }
+    if (global->mode == mode_cmd) {
+        return input_cmd(global, ch);
+    }
+}
+enum bool input_update(struct global* global) {
     char buf[term_capacity];
-    size_t n = term_read(buf);
+    uint32_t n = term_read(buf);
     for (uint32_t i = 0; i < n; i++) {
-        if (input(buf[i]) == true) {
+        if (input(global, buf[i]) == true) {
             return true;
         }
     }
@@ -249,67 +246,68 @@ void draw_clear() {
     write(STDOUT_FILENO, "\x1b[2J", 4);
     write(STDOUT_FILENO, "\x1b[1;1H", 7);
 }
-void draw_text(struct node* this) {
-    struct node* node_i = this;
-    while (node_i->prev != NULL) {
-        node_i = node_i->prev;
+void draw_text(struct node* insert_selector) {
+    struct node* itr = insert_selector;
+    while (itr->prev != NULL) {
+        itr = itr->prev;
     }
-    while (node_i != NULL) {
-        if (node_i == global.nodes.insert_selector) {
+    while (itr != NULL) {
+        if (itr == insert_selector) {
             write(STDOUT_FILENO, "|", 1);
         }
-        write(STDOUT_FILENO, &node_i->ch, 1);
-        node_i = node_i->next;
+        write(STDOUT_FILENO, &itr->ch, 1);
+        itr = itr->next;
     }
 }
-void draw_info() {
-    if (global.mode == mode_insert) {
+void draw_info(enum mode mode) {
+    if (mode == mode_insert) {
         write(STDOUT_FILENO, "[INSERT_MODE]", 13);
-    } else if (global.mode == mode_normal) {
+    } else if (mode == mode_normal) {
         write(STDOUT_FILENO, "[NORMAL_MODE]", 13);
-    } else if (global.mode == mode_raw) {
+    } else if (mode == mode_raw) {
         write(STDOUT_FILENO, "[RAW_MODE]", 10);
-    } else if (global.mode == mode_cmd) {
+    } else if (mode == mode_cmd) {
         write(STDOUT_FILENO, "[CMD_MODE]", 10);
     }
 }
-void draw_cmd() {
-    if (global.nodes.cmd_selector->prev != NULL) {
+void draw_cmd(struct node* cmd_selector) {
+    if (cmd_selector->prev != NULL) {
         write(STDOUT_FILENO, ", cmd: ", 7);
-        draw_text(global.nodes.cmd_selector);
+        draw_text(cmd_selector);
     }
 }
-void update_draw() {
+void update_draw(struct global* global) {
     draw_clear();
-    draw_info();
-    draw_cmd();
+    draw_info(global->mode);
+    draw_cmd(global->nodes.cmd_selector);
     write(STDOUT_FILENO, "\n", 1);
-    draw_text(global.nodes.insert_selector);
+    draw_text(global->nodes.insert_selector);
     fflush(stdout);
 }
-enum bool update() {
-    if (input_update() == true) {
+enum bool update(struct global* global) {
+    if (input_update(global) == true) {
         return true;
     }
-    update_draw();
+    update_draw(global);
     return false;
 }
-void init() {
-    term_init();
-    nodes_init();
+void init(struct global* global) {
+    term_init(&global->term);
+    nodes_init(&global->nodes);
 }
-void deinit() {
-    term_deinit();
+void deinit(struct global* global) {
+    term_deinit(&global->term);
 }
 
 int main() {
-    init();
+    static struct global global;
+    init(&global);
     while (1) {
-        if (update() == true) {
+        if (update(&global) == true) {
             break;
         }
         usleep(10000);
     }
-    deinit();
+    deinit(&global);
     return 0;
 }
