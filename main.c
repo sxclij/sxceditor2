@@ -55,8 +55,8 @@ void term_init(struct term* term) {
     tcsetattr(STDIN_FILENO, TCSANOW, &term->new);
 }
 
-struct node* nodes_insert(struct node* next, char ch) {
-    struct node* this = global.nodes.passive[--global.nodes.passive_size];
+struct node* nodes_insert(struct nodes* nodes, struct node* next, char ch) {
+    struct node* this = nodes->passive[--nodes->passive_size];
     struct node* prev = next->prev;
     this->ch = ch;
     this->next = next;
@@ -67,22 +67,22 @@ struct node* nodes_insert(struct node* next, char ch) {
     }
     return this;
 }
-void nodes_delete(struct node* this) {
+void nodes_delete(struct nodes* nodes, struct node* this) {
     struct node* next = this->next;
     struct node* prev = this->prev;
-    global.nodes.passive[global.nodes.passive_size++] = this;
+    nodes->passive[nodes->passive_size++] = this;
     next->prev = prev;
     if (prev != NULL) {
         prev->next = next;
     }
 }
-void nodes_clear(struct node* this) {
+void nodes_clear(struct nodes* nodes, struct node* this) {
     struct node* itr = this;
     while (itr->next != NULL) {
         itr = itr->next;
     }
     while (itr->prev != NULL) {
-        nodes_delete(itr->prev);
+        nodes_delete(nodes, itr->prev);
     }
 }
 void nodes_to_str(char* dst, struct node* src) {
@@ -106,7 +106,7 @@ void nodes_init(struct nodes* nodes) {
     nodes->cmd_selector = nodes->passive[--nodes->passive_size];
 }
 
-enum bool file_read(struct node* dst, const char* path) {
+enum bool file_read(struct nodes* nodes, struct node* dst, const char* path) {
     FILE* fp = fopen(path, "r");
     if (fp == NULL) {
         printf("failed to open %s. ", path);
@@ -117,7 +117,7 @@ enum bool file_read(struct node* dst, const char* path) {
         if (ch == EOF) {
             break;
         }
-        nodes_insert(dst, ch);
+        nodes_insert(nodes, dst, ch);
     }
     fclose(fp);
     return false;
@@ -135,7 +135,7 @@ enum bool file_write(struct node* src, const char* path) {
     return false;
 }
 
-enum bool cmd_exec(struct node* this) {
+enum bool cmd_exec(struct global* global, struct node* this) {
     char buf1[buf_capacity];
     char buf2[buf_capacity];
     uint32_t i;
@@ -149,11 +149,11 @@ enum bool cmd_exec(struct node* this) {
         return true;
     }
     if (strcmp(buf2, "open") == 0) {
-        nodes_clear(global.nodes.insert_selector);
-        return file_read(global.nodes.insert_selector, buf1 + i);
+        nodes_clear(&global->nodes, global->nodes.insert_selector);
+        return file_read(&global->nodes, global->nodes.insert_selector, buf1 + i);
     }
     if (strcmp(buf2, "save") == 0) {
-        return file_write(global.nodes.insert_selector, buf1 + i);
+        return file_write(global->nodes.insert_selector, buf1 + i);
     }
     return false;
 }
