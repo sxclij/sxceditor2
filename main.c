@@ -171,7 +171,7 @@ enum bool input_normal(struct global* global, char ch) {
                 global->nodes.insert_selector = global->nodes.insert_selector->prev;
             }
             if (global->nodes.insert_selector->prev != NULL) {
-                if (global->nodes.insert_selector->prev->ch == '\n')
+                if (global->nodes.insert_selector->ch == '\n')
                     global->nodes.insert_selector = global->nodes.insert_selector->prev;
             }
             return false;
@@ -180,7 +180,7 @@ enum bool input_normal(struct global* global, char ch) {
                 global->nodes.insert_selector = global->nodes.insert_selector->next;
             }
             if (global->nodes.insert_selector->next != NULL) {
-                if (global->nodes.insert_selector->next->ch == '\r')
+                if (global->nodes.insert_selector->ch == '\r')
                     global->nodes.insert_selector = global->nodes.insert_selector->next;
             }
             return false;
@@ -189,20 +189,20 @@ enum bool input_normal(struct global* global, char ch) {
                 if (global->nodes.insert_selector->prev->ch == '\n') {
                     break;
                 }
-                global->nodes.insert_selector = global->nodes.insert_selector->prev;
+                input_normal(global,'h');
             }
             if (global->nodes.insert_selector->prev == NULL) {
                 return false;
             }
-            global->nodes.insert_selector = global->nodes.insert_selector->prev;
+            input_normal(global,'h');
             while (global->nodes.insert_selector->prev != NULL) {
                 if (global->nodes.insert_selector->prev->ch == '\n') {
                     break;
                 }
-                global->nodes.insert_selector = global->nodes.insert_selector->prev;
+                input_normal(global,'h');
             }
             for (j = 0; j < i && global->nodes.insert_selector->next != NULL && global->nodes.insert_selector->next->ch != '\n'; j++) {
-                global->nodes.insert_selector = global->nodes.insert_selector->next;
+                input_normal(global,'l');
             }
             return false;
         case 'k':
@@ -210,16 +210,16 @@ enum bool input_normal(struct global* global, char ch) {
                 if (global->nodes.insert_selector->prev->ch == '\n') {
                     break;
                 }
-                global->nodes.insert_selector = global->nodes.insert_selector->prev;
+                input_normal(global,'h');
             }
             while (global->nodes.insert_selector->next != NULL) {
                 if (global->nodes.insert_selector->ch == '\n') {
                     break;
                 }
-                global->nodes.insert_selector = global->nodes.insert_selector->next;
+                input_normal(global,'l');
             }
             for (j = 0; j < i + 1 && global->nodes.insert_selector->next != NULL && global->nodes.insert_selector->next->ch != '\n'; j++) {
-                global->nodes.insert_selector = global->nodes.insert_selector->next;
+                input_normal(global,'l');
             }
             return false;
         default:
