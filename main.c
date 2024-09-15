@@ -286,10 +286,11 @@ void draw_clear() {
 }
 void draw_text(struct node* this) {
     struct node* itr = this;
-    while (itr->prev != NULL) {
+    uint32_t i;
+    for (i=0;itr->prev != NULL && i < 40; i++) {
         itr = itr->prev;
     }
-    while (itr != NULL) {
+    for(; i < 120 && itr != NULL; i++) {
         if (itr == this) {
             write(STDOUT_FILENO, "|", 1);
         }
