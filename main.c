@@ -284,13 +284,13 @@ void draw_clear() {
     write(STDOUT_FILENO, "\x1b[2J", 4);
     write(STDOUT_FILENO, "\x1b[1;1H", 7);
 }
-void draw_text(struct node* insert_selector) {
-    struct node* itr = insert_selector;
+void draw_text(struct node* this) {
+    struct node* itr = this;
     while (itr->prev != NULL) {
         itr = itr->prev;
     }
     while (itr != NULL) {
-        if (itr == insert_selector) {
+        if (itr == this) {
             write(STDOUT_FILENO, "|", 1);
         }
         write(STDOUT_FILENO, &itr->ch, 1);
