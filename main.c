@@ -170,14 +170,22 @@ enum bool input_normal(struct global* global, char ch) {
             if (global->nodes.insert_selector->prev != NULL) {
                 global->nodes.insert_selector = global->nodes.insert_selector->prev;
             }
+            if (global->nodes.insert_selector->prev != NULL) {
+                if (global->nodes.insert_selector->prev->ch == '\n')
+                    global->nodes.insert_selector = global->nodes.insert_selector->prev;
+            }
             return false;
         case 'l':
             if (global->nodes.insert_selector->next != NULL) {
                 global->nodes.insert_selector = global->nodes.insert_selector->next;
             }
+            if (global->nodes.insert_selector->next != NULL) {
+                if (global->nodes.insert_selector->next->ch == '\r')
+                    global->nodes.insert_selector = global->nodes.insert_selector->next;
+            }
             return false;
         case 'j':
-            for(i=0;global->nodes.insert_selector->prev != NULL; i++) {
+            for (i = 0; global->nodes.insert_selector->prev != NULL; i++) {
                 if (global->nodes.insert_selector->prev->ch == '\n') {
                     break;
                 }
@@ -193,12 +201,12 @@ enum bool input_normal(struct global* global, char ch) {
                 }
                 global->nodes.insert_selector = global->nodes.insert_selector->prev;
             }
-            for(j=0; j<i && global->nodes.insert_selector->next != NULL && global->nodes.insert_selector->next->ch != '\n'; j++) {
+            for (j = 0; j < i && global->nodes.insert_selector->next != NULL && global->nodes.insert_selector->next->ch != '\n'; j++) {
                 global->nodes.insert_selector = global->nodes.insert_selector->next;
             }
             return false;
         case 'k':
-            for(i=0;global->nodes.insert_selector->prev != NULL; i++) {
+            for (i = 0; global->nodes.insert_selector->prev != NULL; i++) {
                 if (global->nodes.insert_selector->prev->ch == '\n') {
                     break;
                 }
@@ -210,7 +218,7 @@ enum bool input_normal(struct global* global, char ch) {
                 }
                 global->nodes.insert_selector = global->nodes.insert_selector->next;
             }
-            for(j=0; j<i+1 && global->nodes.insert_selector->next != NULL && global->nodes.insert_selector->next->ch != '\n'; j++) {
+            for (j = 0; j < i + 1 && global->nodes.insert_selector->next != NULL && global->nodes.insert_selector->next->ch != '\n'; j++) {
                 global->nodes.insert_selector = global->nodes.insert_selector->next;
             }
             return false;
@@ -287,12 +295,18 @@ void draw_clear() {
 void draw_text(struct node* this) {
     struct node* itr = this;
     uint32_t i;
-    for (i=0;itr->prev != NULL && i < 40; i++) {
+    for (i = 0; itr->prev != NULL && i < 4;) {
+        if (itr->ch == '\n') {
+            i++;
+        }
         itr = itr->prev;
     }
-    for(; i < 120 && itr != NULL; i++) {
+    while (i < 12 && itr != NULL) {
         if (itr == this) {
             write(STDOUT_FILENO, "|", 1);
+        }
+        if (itr->ch == '\n') {
+            i++;
         }
         write(STDOUT_FILENO, &itr->ch, 1);
         itr = itr->next;
