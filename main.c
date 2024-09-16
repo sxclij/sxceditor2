@@ -347,7 +347,7 @@ void draw_text(struct node* this, enum bool is_cursor) {
             i++;
         }
     }
-    while (i < 18 && itr != NULL) {
+    for (i=0;i < 18 && itr != NULL;) {
         if (itr == this && is_cursor) {
             write(STDOUT_FILENO, "|", 1);
         }
