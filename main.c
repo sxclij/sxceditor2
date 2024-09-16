@@ -8,9 +8,9 @@
 #define nodes_capacity 65536
 #define buf_capacity 65536
 
-enum bool {
-    false = 0,
-    true = 1
+enum result {
+    ok = 0,
+    err = 1,
 };
 enum mode {
     mode_normal,
@@ -117,10 +117,10 @@ void nodes_init(struct nodes* nodes) {
     nodes->cmd_selector = nodes->passive[--nodes->passive_size];
     nodes->message_selector = nodes->passive[--nodes->passive_size];
 }
-enum bool file_read(struct nodes* nodes, struct node* dst, const char* path) {
+enum result file_read(struct nodes* nodes, struct node* dst, const char* path) {
     FILE* fp = fopen(path, "r");
     if (fp == NULL) {
-        return true;
+        return err;
     }
     while (1) {
         int ch = fgetc(fp);
@@ -130,13 +130,13 @@ enum bool file_read(struct nodes* nodes, struct node* dst, const char* path) {
         nodes_insert(nodes, dst, ch);
     }
     fclose(fp);
-    return false;
+    return ok;
 }
-enum bool file_write(const char* path, struct node* src) {
+enum result file_write(const char* path, struct node* src) {
     struct node* itr = src;
     FILE* fp = fopen(path, "w");
     if (fp == NULL) {
-        return true;
+        return err;
     }
     while (itr->prev != NULL) {
         itr = itr->prev;
@@ -144,27 +144,27 @@ enum bool file_write(const char* path, struct node* src) {
     for (; itr->next != NULL; itr = itr->next) {
         fputc(itr->ch, fp);
     }
-    return false;
+    return ok;
 }
-enum bool cmd_openfile(struct nodes* nodes, const char* path) {
+enum result cmd_openfile(struct nodes* nodes, const char* path) {
     char buf[buf_capacity];
     nodes_clear(nodes, nodes->insert_selector);
-    if (file_read(nodes, nodes->insert_selector, path)) {
-        sprintf(buf, "open %s failed.", path);
+    if (file_read(nodes, nodes->insert_selector, path) == ok) {
+        sprintf(buf, "open %s succeeded.", path);
         nodes_replace_str(nodes, nodes->message_selector, buf);
     } else {
-        sprintf(buf, "open %s succeeded.", path);
+        sprintf(buf, "open %s failed.", path);
         nodes_replace_str(nodes, nodes->message_selector, buf);
     }
 }
 void cmd_savefile(struct nodes* nodes, const char* path) {
-    if (file_write(path, nodes->insert_selector)) {
-        nodes_replace_str(nodes, nodes->message_selector, "save failed.");
-    } else {
+    if (file_write(path, nodes->insert_selector) == ok) {
         nodes_replace_str(nodes, nodes->message_selector, "save succeeded.");
+    } else {
+        nodes_replace_str(nodes, nodes->message_selector, "save failed.");
     }
 }
-enum bool cmd_exec(struct global* global, struct node* this) {
+enum result cmd_exec(struct global* global, struct node* this) {
     char buf[buf_capacity];
     char* option;
     uint32_t i = 0;
@@ -176,16 +176,16 @@ enum bool cmd_exec(struct global* global, struct node* this) {
     buf[i++] = '\0';
     option = buf + i;
     if (strcmp(buf, "exit") == 0 || strcmp(buf, "quit") == 0 || strcmp(buf, "q") == 0) {
-        return true;
+        return err;
     } else if (strcmp(buf, "open") == 0) {
         cmd_openfile(&global->nodes, buf + i);
-        return false;
+        return ok;
     } else if (strcmp(buf, "save") == 0) {
         cmd_savefile(&global->nodes, buf + i);
-        return false;
+        return ok;
     } else {
         nodes_replace_str(&global->nodes, global->nodes.message_selector, "command not found.");
-        return false;
+        return ok;
     }
 }
 void input_normal_h(struct nodes* nodes) {
@@ -246,74 +246,74 @@ void input_normal_k(struct nodes* nodes) {
         input_normal_l(nodes);
     }
 }
-enum bool input_normal(struct global* global, char ch) {
+enum result input_normal(struct global* global, char ch) {
     uint32_t i, j;
     switch (ch) {
         case 'i':
             global->mode = mode_insert;
-            return false;
+            return ok;
         case ':':
             global->mode = mode_cmd;
-            return false;
+            return ok;
         case 'q':
-            return true;
+            return err;
         case 'h':
             input_normal_h(&global->nodes);
-            return false;
+            return ok;
         case 'l':
             input_normal_l(&global->nodes);
-            return false;
+            return ok;
         case 'j':
             input_normal_j(&global->nodes);
-            return false;
+            return ok;
         case 'k':
             input_normal_k(&global->nodes);
-            return false;
+            return ok;
         default:
-            return false;
+            return ok;
     }
 }
-enum bool input_cmd(struct global* global, char ch) {
+enum result input_cmd(struct global* global, char ch) {
     switch (ch) {
         case 27:
             global->mode = mode_normal;
-            return false;
+            return ok;
         case '\n':
-            if (cmd_exec(global, global->nodes.cmd_selector)) {
-                return true;
-            } else {
+            if (cmd_exec(global, global->nodes.cmd_selector) == ok) {
                 nodes_clear(&global->nodes, global->nodes.cmd_selector);
                 global->mode = mode_normal;
-                return false;
+                return ok;
+            } else {
+                return err;
             }
         case '\b':
         case 127:
             if (global->nodes.cmd_selector->prev != NULL) {
                 nodes_delete(&global->nodes, global->nodes.cmd_selector->prev);
             }
-            return false;
+            return ok;
         default:
             nodes_insert(&global->nodes, global->nodes.cmd_selector, ch);
-            return false;
+            return ok;
     }
 }
-enum bool input_insert(struct global* global, char ch) {
+enum result input_insert(struct global* global, char ch) {
     switch (ch) {
         case 27:
             global->mode = mode_normal;
-            return false;
+            return ok;
         case '\b':
         case 127:
             if (global->nodes.insert_selector->prev != NULL) {
                 nodes_delete(&global->nodes, global->nodes.insert_selector->prev);
             }
-            return false;
+            return ok;
         default:
             nodes_insert(&global->nodes, global->nodes.insert_selector, ch);
-            return false;
+            return ok;
     }
 }
-enum bool input_ch(struct global* global, char ch) {
+enum result input_ch(struct global* global, char ch) {
     if (global->mode == mode_normal) {
         return input_normal(global, ch);
     }
@@ -324,21 +324,21 @@ enum bool input_ch(struct global* global, char ch) {
         return input_cmd(global, ch);
     }
 }
-enum bool input(struct global* global) {
+enum result input(struct global* global) {
     char buf[term_capacity];
     uint32_t n = term_read(buf);
     for (uint32_t i = 0; i < n; i++) {
-        if (input_ch(global, buf[i]) == true) {
-            return true;
+        if (input_ch(global, buf[i]) == err) {
+            return err;
         }
     }
-    return false;
+    return ok;
 }
 void draw_clear() {
     write(STDOUT_FILENO, "\x1b[2J", 4);
     write(STDOUT_FILENO, "\x1b[1;1H", 7);
 }
-void draw_text(struct node* this, enum bool is_cursor) {
+void draw_text(struct node* this, enum result is_cursor) {
     struct node* itr = this;
     uint32_t i;
     for (i = 0; itr->prev != NULL && i < 6;) {
@@ -347,10 +347,10 @@ void draw_text(struct node* this, enum bool is_cursor) {
             i++;
         }
     }
-    if(itr->ch == '\n' && itr->prev != NULL) {
+    if (itr->ch == '\n' && itr->prev != NULL) {
         itr = itr->next;
     }
-    for (i=0;i < 15 && itr != NULL;) {
+    for (i = 0; i < 15 && itr != NULL;) {
         if (itr == this && is_cursor) {
             write(STDOUT_FILENO, "|", 1);
         }
@@ -375,14 +375,14 @@ void draw_info(enum mode mode) {
 void draw_message(struct node* message_selector) {
     if (message_selector->prev != NULL) {
         write(STDOUT_FILENO, ", message: [", 12);
-        draw_text(message_selector, false);
+        draw_text(message_selector, ok);
         write(STDOUT_FILENO, "]", 1);
     }
 }
 void draw_cmd(struct node* cmd_selector) {
     if (cmd_selector->prev != NULL) {
         write(STDOUT_FILENO, ", cmd: ", 7);
-        draw_text(cmd_selector, false);
+        draw_text(cmd_selector, ok);
     }
 }
 void draw(struct global* global) {
@@ -391,15 +391,16 @@ void draw(struct global* global) {
     draw_message(global->nodes.message_selector);
     draw_cmd(global->nodes.cmd_selector);
     write(STDOUT_FILENO, "\n", 1);
-    draw_text(global->nodes.insert_selector, true);
+    draw_text(global->nodes.insert_selector, err);
     fflush(stdout);
 }
-enum bool update(struct global* global) {
-    if (input(global)) {
-        return true;
+enum result update(struct global* global) {
+    if (input(global) == ok) {
+        draw(global);
+        return ok;
+    } else {
+        return err;
     }
-    draw(global);
-    return false;
 }
 void init(struct global* global) {
     term_init(&global->term);
@@ -412,10 +413,11 @@ int main() {
     static struct global global;
     init(&global);
     while (1) {
-        if (update(&global) == true) {
+        if (update(&global) == ok) {
+            usleep(10000);
+        } else {
             break;
         }
-        usleep(10000);
     }
     draw_clear();
     write(STDOUT_FILENO, "sxceditor exit.\n", 17);
