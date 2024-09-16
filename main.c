@@ -150,25 +150,38 @@ enum bool cmd_openfile(struct nodes* nodes, const char* path) {
 enum bool cmd_exec(struct global* global, struct node* this) {
     char buf1[buf_capacity];
     char buf2[buf_capacity];
+    char buf3[buf_capacity];
     uint32_t i;
     nodes_to_str(buf1, this);
+    nodes_clear(&global->nodes, global->nodes.message_selector);
     for (i = 0; buf1[i] != ' ' && buf1[i] != '\0'; i++) {
         buf2[i] = buf1[i];
     }
     buf2[i++] = '\0';
     if (strcmp(buf2, "exit") == 0 || strcmp(buf2, "quit") == 0 || strcmp(buf2, "q") == 0) {
         return true;
-    }
-    if (strcmp(buf2, "open") == 0) {
+    } else if (strcmp(buf2, "open") == 0) {
         if (cmd_openfile(&global->nodes, buf1 + i)) {
-            printf("failed to open file\n");
-            return true;
+            sprintf(buf3, "open %s failed.", buf1 + i);
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, buf3);
         }
+        else {
+            sprintf(buf3, "open %s succeeded.", buf1 + i);
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, buf3);
+        }
+        return false;
+    } else if (strcmp(buf2, "save") == 0) {
+        if(file_write(buf1 + i, global->nodes.insert_selector)) {
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, "save failed.");
+        }
+        else {
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, "save succeeded.");
+        }
+        return false;
+    } else {
+        nodes_replace_str(&global->nodes, global->nodes.message_selector, "command not found.");
+        return false;
     }
-    if (strcmp(buf2, "save") == 0) {
-        return file_write(buf1 + i, global->nodes.insert_selector);
-    }
-    return false;
 }
 void input_normal_h(struct nodes* nodes) {
     if (nodes->insert_selector->prev != NULL) {
@@ -351,6 +364,13 @@ void draw_info(enum mode mode) {
         write(STDOUT_FILENO, "[CMD_MODE]", 10);
     }
 }
+void draw_message(struct node* message_selector) {
+    if (message_selector->prev != NULL) {
+        write(STDOUT_FILENO, ", message: [", 12);
+        draw_text(message_selector);
+        write(STDOUT_FILENO, "]", 1);
+    }
+}
 void draw_cmd(struct node* cmd_selector) {
     if (cmd_selector->prev != NULL) {
         write(STDOUT_FILENO, ", cmd: ", 7);
@@ -360,6 +380,7 @@ void draw_cmd(struct node* cmd_selector) {
 void draw(struct global* global) {
     draw_clear();
     draw_info(global->mode);
+    draw_message(global->nodes.message_selector);
     draw_cmd(global->nodes.cmd_selector);
     write(STDOUT_FILENO, "\n", 1);
     draw_text(global->nodes.insert_selector);
