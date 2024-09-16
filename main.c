@@ -343,9 +343,6 @@ void draw_text(struct node* this) {
         itr = itr->prev;
     }
     while (i < 18 && itr != NULL) {
-        if (itr == this) {
-            write(STDOUT_FILENO, "|", 1);
-        }
         if (itr->ch == '\n') {
             i++;
         }
