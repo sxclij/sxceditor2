@@ -333,7 +333,7 @@ void draw_clear() {
     write(STDOUT_FILENO, "\x1b[2J", 4);
     write(STDOUT_FILENO, "\x1b[1;1H", 7);
 }
-void draw_text(struct node* this) {
+void draw_text(struct node* this, enum bool is_cursor) {
     struct node* itr = this;
     uint32_t i;
     for (i = 0; itr->prev != NULL && i < 6;) {
@@ -343,6 +343,9 @@ void draw_text(struct node* this) {
         itr = itr->prev;
     }
     while (i < 18 && itr != NULL) {
+        if (itr == this && is_cursor) {
+            write(STDOUT_FILENO, "|", 1);
+        }
         if (itr->ch == '\n') {
             i++;
         }
@@ -364,14 +367,14 @@ void draw_info(enum mode mode) {
 void draw_message(struct node* message_selector) {
     if (message_selector->prev != NULL) {
         write(STDOUT_FILENO, ", message: [", 12);
-        draw_text(message_selector);
+        draw_text(message_selector, false);
         write(STDOUT_FILENO, "]", 1);
     }
 }
 void draw_cmd(struct node* cmd_selector) {
     if (cmd_selector->prev != NULL) {
         write(STDOUT_FILENO, ", cmd: ", 7);
-        draw_text(cmd_selector);
+        draw_text(cmd_selector, false);
     }
 }
 void draw(struct global* global) {
@@ -380,7 +383,7 @@ void draw(struct global* global) {
     draw_message(global->nodes.message_selector);
     draw_cmd(global->nodes.cmd_selector);
     write(STDOUT_FILENO, "\n", 1);
-    draw_text(global->nodes.insert_selector);
+    draw_text(global->nodes.insert_selector, true);
     fflush(stdout);
 }
 enum bool update(struct global* global) {
