@@ -39,7 +39,6 @@ struct global {
     struct nodes nodes;
     enum mode mode;
 };
-
 uint32_t term_read(char* dst) {
     return read(STDIN_FILENO, dst, term_capacity);
 }
@@ -54,7 +53,6 @@ void term_init(struct term* term) {
     term->new.c_cc[VTIME] = 0;
     tcsetattr(STDIN_FILENO, TCSANOW, &term->new);
 }
-
 struct node* nodes_insert(struct nodes* nodes, struct node* next, char ch) {
     struct node* this = nodes->passive[--nodes->passive_size];
     struct node* prev = next->prev;
@@ -105,7 +103,6 @@ void nodes_init(struct nodes* nodes) {
     nodes->insert_selector = nodes->passive[--nodes->passive_size];
     nodes->cmd_selector = nodes->passive[--nodes->passive_size];
 }
-
 enum bool file_read(struct nodes* nodes, struct node* dst, const char* path) {
     FILE* fp = fopen(path, "r");
     if (fp == NULL) {
@@ -132,7 +129,6 @@ enum bool file_write(const char* path, struct node* src) {
     fclose(fp);
     return false;
 }
-
 enum bool cmd_exec(struct global* global, struct node* this) {
     char buf1[buf_capacity];
     char buf2[buf_capacity];
@@ -154,7 +150,6 @@ enum bool cmd_exec(struct global* global, struct node* this) {
     }
     return false;
 }
-
 void input_normal_h(struct nodes* nodes) {
     if (nodes->insert_selector->prev != NULL) {
         nodes->insert_selector = nodes->insert_selector->prev;
@@ -293,7 +288,6 @@ enum bool input_update(struct global* global) {
     }
     return false;
 }
-
 void draw_clear() {
     write(STDOUT_FILENO, "\x1b[2J", 4);
     write(STDOUT_FILENO, "\x1b[1;1H", 7);
@@ -357,7 +351,6 @@ void init(struct global* global) {
 void deinit(struct global* global) {
     term_deinit(&global->term);
 }
-
 int main() {
     static struct global global;
     init(&global);
@@ -367,6 +360,8 @@ int main() {
         }
         usleep(10000);
     }
+    draw_clear();
+    write(STDOUT_FILENO, "sxceditor exit.\n", 17);
     deinit(&global);
     return 0;
 }
