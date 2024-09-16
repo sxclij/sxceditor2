@@ -148,10 +148,10 @@ enum result file_write(const char* path, struct node* src) {
 }
 enum result cmd_openfile(struct nodes* nodes, const char* path) {
     nodes_clear(nodes, nodes->insert_selector);
-    file_read(nodes, nodes->insert_selector, path);
+    return file_read(nodes, nodes->insert_selector, path);
 }
 enum result cmd_savefile(struct nodes* nodes, const char* path) {
-    file_write(path, nodes->insert_selector);
+    return file_write(path, nodes->insert_selector);
 }
 enum result cmd_exec(struct global* global, struct node* this) {
     char buf[buf_capacity];
