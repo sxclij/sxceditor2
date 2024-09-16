@@ -328,7 +328,9 @@ enum result input(struct global* global) {
     char buf[term_capacity];
     uint32_t n = term_read(buf);
     for (uint32_t i = 0; i < n; i++) {
-        if (input_ch(global, buf[i]) == err) {
+        if (input_ch(global, buf[i]) == ok) {
+            continue;
+        } else {
             return err;
         }
     }
