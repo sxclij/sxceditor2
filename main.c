@@ -156,6 +156,7 @@ enum result cmd_openfile(struct nodes* nodes, const char* path) {
         sprintf(buf, "open %s failed.", path);
         nodes_replace_str(nodes, nodes->message_selector, buf);
     }
+    return ok;
 }
 void cmd_savefile(struct nodes* nodes, const char* path) {
     if (file_write(path, nodes->insert_selector) == ok) {
@@ -178,10 +179,10 @@ enum result cmd_exec(struct global* global, struct node* this) {
     if (strcmp(buf, "exit") == 0 || strcmp(buf, "quit") == 0 || strcmp(buf, "q") == 0) {
         return err;
     } else if (strcmp(buf, "open") == 0) {
-        cmd_openfile(&global->nodes, buf + i);
+        cmd_openfile(&global->nodes, option);
         return ok;
     } else if (strcmp(buf, "save") == 0) {
-        cmd_savefile(&global->nodes, buf + i);
+        cmd_savefile(&global->nodes, option);
         return ok;
     } else {
         nodes_replace_str(&global->nodes, global->nodes.message_selector, "command not found.");
@@ -247,7 +248,6 @@ void input_normal_k(struct nodes* nodes) {
     }
 }
 enum result input_normal(struct global* global, char ch) {
-    uint32_t i, j;
     switch (ch) {
         case 'i':
             global->mode = mode_insert;
@@ -322,6 +322,9 @@ enum result input_ch(struct global* global, char ch) {
     }
     if (global->mode == mode_cmd) {
         return input_cmd(global, ch);
+    }
+    else {
+        return err;
     }
 }
 enum result input(struct global* global) {
