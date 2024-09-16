@@ -190,6 +190,24 @@ void input_normal_j(struct nodes* nodes) {
         input_normal_l(nodes);
     }
 }
+void input_normal_k(struct nodes* nodes) {
+    uint32_t i, j;
+    for (i = 0; nodes->insert_selector->prev != NULL; i++) {
+        if (nodes->insert_selector->prev->ch == '\n') {
+            break;
+        }
+        input_normal_h(nodes);
+    }
+    while (nodes->insert_selector->next != NULL) {
+        if (nodes->insert_selector->ch == '\n') {
+            break;
+        }
+        input_normal_l(nodes);
+    }
+    for (j = 0; j < i + 1 && nodes->insert_selector->next != NULL && nodes->insert_selector->next->ch != '\n'; j++) {
+        input_normal_l(nodes);
+    }
+}
 enum bool input_normal(struct global* global, char ch) {
     uint32_t i, j;
     switch (ch) {
@@ -211,21 +229,7 @@ enum bool input_normal(struct global* global, char ch) {
             input_normal_j(&global->nodes);
             return false;
         case 'k':
-            for (i = 0; global->nodes.insert_selector->prev != NULL; i++) {
-                if (global->nodes.insert_selector->prev->ch == '\n') {
-                    break;
-                }
-                input_normal_h(&global->nodes);
-            }
-            while (global->nodes.insert_selector->next != NULL) {
-                if (global->nodes.insert_selector->ch == '\n') {
-                    break;
-                }
-                input_normal_l(&global->nodes);
-            }
-            for (j = 0; j < i + 1 && global->nodes.insert_selector->next != NULL && global->nodes.insert_selector->next->ch != '\n'; j++) {
-                input_normal_l(&global->nodes);
-            }
+            input_normal_k(&global->nodes);
             return false;
         default:
             return false;
