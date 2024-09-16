@@ -398,6 +398,10 @@ void draw(struct global* global) {
     draw_text(global->nodes.insert_selector, err);
     fflush(stdout);
 }
+void draw_deinit() {
+    draw_clear();
+    write(STDOUT_FILENO, "sxceditor exit.\n", 17);
+}
 enum result update(struct global* global) {
     if (input(global) == ok) {
         draw(global);
@@ -411,6 +415,7 @@ void init(struct global* global) {
     nodes_init(&global->nodes);
 }
 void deinit(struct global* global) {
+    draw_deinit();
     term_deinit(&global->term);
 }
 int main() {
@@ -423,8 +428,6 @@ int main() {
             break;
         }
     }
-    draw_clear();
-    write(STDOUT_FILENO, "sxceditor exit.\n", 17);
     deinit(&global);
     return 0;
 }
