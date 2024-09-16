@@ -141,9 +141,10 @@ enum bool file_write(const char* path, struct node* src) {
     while (itr->prev != NULL) {
         itr = itr->prev;
     }
-    for (; itr->next != NULL; itr = itr->next) {
+    for (; itr != NULL; itr = itr->next) {
         fputc(itr->ch, fp);
     }
+    fclose(fp);
     return false;
 }
 enum bool cmd_openfile(struct nodes* nodes, const char* path) {
@@ -413,5 +414,5 @@ int main() {
     draw_clear();
     write(STDOUT_FILENO, "sxceditor exit.\n", 17);
     deinit(&global);
-    return 0;
-}
+    return 1;
+} 
