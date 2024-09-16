@@ -147,8 +147,15 @@ enum bool file_write(const char* path, struct node* src) {
     return false;
 }
 enum bool cmd_openfile(struct nodes* nodes, const char* path) {
+    char buf[buf_capacity];
     nodes_clear(nodes, nodes->insert_selector);
-    return file_read(nodes, nodes->insert_selector, path);
+    if (file_read(nodes, nodes->insert_selector, path)) {
+        sprintf(buf, "open %s failed.", path);
+        nodes_replace_str(nodes, nodes->message_selector, buf);
+    } else {
+        sprintf(buf, "open %s succeeded.", path);
+        nodes_replace_str(nodes, nodes->message_selector, buf);
+    }
 }
 void cmd_savefile(struct nodes* nodes, const char* path) {
     if (file_write(path, nodes->insert_selector)) {
@@ -161,23 +168,17 @@ enum bool cmd_exec(struct global* global, struct node* this) {
     char buf[buf_capacity];
     char* option;
     uint32_t i = 0;
+    nodes_to_str(buf, this);
+    nodes_clear(&global->nodes, global->nodes.message_selector);
     while (buf[i] != ' ' && buf[i] != '\0') {
         i++;
     }
     buf[i++] = '\0';
     option = buf + i;
-    nodes_to_str(buf, this);
-    nodes_clear(&global->nodes, global->nodes.message_selector);
     if (strcmp(buf, "exit") == 0 || strcmp(buf, "quit") == 0 || strcmp(buf, "q") == 0) {
         return true;
     } else if (strcmp(buf, "open") == 0) {
-        if (cmd_openfile(&global->nodes, buf + i)) {
-            sprintf(option, "open %s failed.", buf + i);
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, option);
-        } else {
-            sprintf(option, "open %s succeeded.", buf + i);
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, option);
-        }
+        cmd_openfile(&global->nodes, buf + i);
         return false;
     } else if (strcmp(buf, "save") == 0) {
         cmd_savefile(&global->nodes, buf + i);
@@ -341,10 +342,10 @@ void draw_text(struct node* this, enum bool is_cursor) {
     struct node* itr = this;
     uint32_t i;
     for (i = 0; itr->prev != NULL && i < 6;) {
+        itr = itr->prev;
         if (itr->ch == '\n') {
             i++;
         }
-        itr = itr->prev;
     }
     while (i < 18 && itr != NULL) {
         if (itr == this && is_cursor) {
