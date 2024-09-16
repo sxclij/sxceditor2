@@ -69,7 +69,9 @@ void nodes_delete(struct nodes* nodes, struct node* this) {
     struct node* next = this->next;
     struct node* prev = this->prev;
     nodes->passive[nodes->passive_size++] = this;
-    next->prev = prev;
+    if (next != NULL) {
+        next->prev = prev;
+    }
     if (prev != NULL) {
         prev->next = next;
     }
@@ -77,11 +79,12 @@ void nodes_delete(struct nodes* nodes, struct node* this) {
 void nodes_clear(struct nodes* nodes, struct node* this) {
     struct node* itr = this;
     while (itr->next != NULL) {
-        itr = itr->next;
+        nodes_delete(nodes, itr->next);
     }
     while (itr->prev != NULL) {
         nodes_delete(nodes, itr->prev);
     }
+    itr->ch = '\0';
 }
 void nodes_to_str(char* dst, struct node* src) {
     struct node* itr = src;
@@ -152,7 +155,7 @@ enum bool cmd_exec(struct global* global, struct node* this) {
         return true;
     }
     if (strcmp(buf2, "open") == 0) {
-        if(cmd_openfile(&global->nodes, buf1 + i)) {
+        if (cmd_openfile(&global->nodes, buf1 + i)) {
             printf("failed to open file\n");
             return true;
         }
