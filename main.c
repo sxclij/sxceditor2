@@ -95,6 +95,12 @@ void nodes_to_str(char* dst, struct node* src) {
     }
     dst[i + 1] = '\0';
 }
+void nodes_replace(struct nodes* nodes, struct node* this, const char* src) {
+    nodes_clear(nodes, this);
+    for (uint32_t i = 0; src[i] != '\0'; i++) {
+        nodes_insert(nodes, this, src[i]);
+    }
+}
 void nodes_init(struct nodes* nodes) {
     nodes->passive_size = nodes_capacity;
     for (uint32_t i = 0; i < nodes_capacity; i++) {
