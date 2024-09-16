@@ -146,7 +146,7 @@ enum result file_write(const char* path, struct node* src) {
     }
     return ok;
 }
-enum result cmd_openfile(struct nodes* nodes, const char* path) {
+void cmd_openfile(struct nodes* nodes, const char* path) {
     char buf[buf_capacity];
     nodes_clear(nodes, nodes->insert_selector);
     if (file_read(nodes, nodes->insert_selector, path) == ok) {
@@ -156,13 +156,15 @@ enum result cmd_openfile(struct nodes* nodes, const char* path) {
         sprintf(buf, "open %s failed.", path);
         nodes_replace_str(nodes, nodes->message_selector, buf);
     }
-    return ok;
 }
 void cmd_savefile(struct nodes* nodes, const char* path) {
+    char buf[buf_capacity];
     if (file_write(path, nodes->insert_selector) == ok) {
-        nodes_replace_str(nodes, nodes->message_selector, "save succeeded.");
+        sprintf(buf, "save %s succeeded.", path);
+        nodes_replace_str(nodes, nodes->message_selector, buf);
     } else {
-        nodes_replace_str(nodes, nodes->message_selector, "save failed.");
+        sprintf(buf, "save %s failed.", path);
+        nodes_replace_str(nodes, nodes->message_selector, buf);
     }
 }
 enum result cmd_exec(struct global* global, struct node* this) {
@@ -322,8 +324,7 @@ enum result input_ch(struct global* global, char ch) {
     }
     if (global->mode == mode_cmd) {
         return input_cmd(global, ch);
-    }
-    else {
+    } else {
         return err;
     }
 }
