@@ -295,7 +295,7 @@ enum bool input_insert(struct global* global, char ch) {
             return false;
     }
 }
-enum bool input(struct global* global, char ch) {
+enum bool input_ch(struct global* global, char ch) {
     if (global->mode == mode_normal) {
         return input_normal(global, ch);
     }
@@ -306,11 +306,11 @@ enum bool input(struct global* global, char ch) {
         return input_cmd(global, ch);
     }
 }
-enum bool input_update(struct global* global) {
+enum bool input(struct global* global) {
     char buf[term_capacity];
     uint32_t n = term_read(buf);
     for (uint32_t i = 0; i < n; i++) {
-        if (input(global, buf[i]) == true) {
+        if (input_ch(global, buf[i]) == true) {
             return true;
         }
     }
@@ -366,7 +366,7 @@ void draw(struct global* global) {
     fflush(stdout);
 }
 enum bool update(struct global* global) {
-    if (input_update(global)) {
+    if (input(global)) {
         return true;
     }
     draw(global);
