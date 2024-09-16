@@ -295,13 +295,13 @@ void draw_clear() {
 void draw_text(struct node* this) {
     struct node* itr = this;
     uint32_t i;
-    for (i = 0; itr->prev != NULL && i < 4;) {
+    for (i = 0; itr->prev != NULL && i < 6;) {
         if (itr->ch == '\n') {
             i++;
         }
         itr = itr->prev;
     }
-    while (i < 12 && itr != NULL) {
+    while (i < 18 && itr != NULL) {
         if (itr == this) {
             write(STDOUT_FILENO, "|", 1);
         }
