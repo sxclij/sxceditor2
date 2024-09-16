@@ -129,6 +129,10 @@ enum bool file_write(const char* path, struct node* src) {
     fclose(fp);
     return false;
 }
+enum bool cmd_openfile(struct nodes* nodes, const char* path) {
+    nodes_clear(nodes, nodes->insert_selector);
+    return file_read(nodes, nodes->insert_selector, path);
+}
 enum bool cmd_exec(struct global* global, struct node* this) {
     char buf1[buf_capacity];
     char buf2[buf_capacity];
@@ -142,8 +146,10 @@ enum bool cmd_exec(struct global* global, struct node* this) {
         return true;
     }
     if (strcmp(buf2, "open") == 0) {
-        nodes_clear(&global->nodes, global->nodes.insert_selector);
-        return file_read(&global->nodes, global->nodes.insert_selector, buf1 + i);
+        if(cmd_openfile(&global->nodes, buf1 + i)) {
+            printf("failed to open file\n");
+            return true;
+        }
     }
     if (strcmp(buf2, "save") == 0) {
         return file_write(buf1 + i, global->nodes.insert_selector);
