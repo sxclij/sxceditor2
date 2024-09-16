@@ -32,6 +32,7 @@ struct nodes {
     struct node* passive[nodes_capacity];
     struct node* insert_selector;
     struct node* cmd_selector;
+    struct node* message_selector;
     uint32_t passive_size;
 };
 struct global {
@@ -98,11 +99,14 @@ void nodes_to_str(char* dst, struct node* src) {
     }
     dst[i + 1] = '\0';
 }
-void nodes_replace(struct nodes* nodes, struct node* this, const char* src) {
-    nodes_clear(nodes, this);
+void nodes_insert_str(struct nodes* nodes, struct node* next, const char* src) {
     for (uint32_t i = 0; src[i] != '\0'; i++) {
-        nodes_insert(nodes, this, src[i]);
+        nodes_insert(nodes, next, src[i]);
     }
+}
+void nodes_replace_str(struct nodes* nodes, struct node* this, const char* src) {
+    nodes_clear(nodes, this);
+    nodes_insert_str(nodes, this, src);
 }
 void nodes_init(struct nodes* nodes) {
     nodes->passive_size = nodes_capacity;
@@ -111,6 +115,7 @@ void nodes_init(struct nodes* nodes) {
     }
     nodes->insert_selector = nodes->passive[--nodes->passive_size];
     nodes->cmd_selector = nodes->passive[--nodes->passive_size];
+    nodes->message_selector = nodes->passive[--nodes->passive_size];
 }
 enum bool file_read(struct nodes* nodes, struct node* dst, const char* path) {
     FILE* fp = fopen(path, "r");
