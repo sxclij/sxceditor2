@@ -344,7 +344,7 @@ void update_draw(struct global* global) {
     fflush(stdout);
 }
 enum bool update(struct global* global) {
-    if (input_update(global) == true) {
+    if (input_update(global)) {
         return true;
     }
     update_draw(global);
