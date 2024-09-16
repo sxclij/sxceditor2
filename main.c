@@ -357,7 +357,7 @@ void draw_cmd(struct node* cmd_selector) {
         draw_text(cmd_selector);
     }
 }
-void update_draw(struct global* global) {
+void draw(struct global* global) {
     draw_clear();
     draw_info(global->mode);
     draw_cmd(global->nodes.cmd_selector);
@@ -369,7 +369,7 @@ enum bool update(struct global* global) {
     if (input_update(global)) {
         return true;
     }
-    update_draw(global);
+    draw(global);
     return false;
 }
 void init(struct global* global) {
