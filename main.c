@@ -168,6 +168,28 @@ void input_normal_l(struct nodes* nodes) {
             nodes->insert_selector = nodes->insert_selector->next;
     }
 }
+void input_normal_j(struct nodes* nodes) {
+    uint32_t i, j;
+    for (i = 0; nodes->insert_selector->prev != NULL; i++) {
+        if (nodes->insert_selector->prev->ch == '\n') {
+            break;
+        }
+        input_normal_h(nodes);
+    }
+    if (nodes->insert_selector->prev == NULL) {
+        return;
+    }
+    input_normal_h(nodes);
+    while (nodes->insert_selector->prev != NULL) {
+        if (nodes->insert_selector->prev->ch == '\n') {
+            break;
+        }
+        input_normal_h(nodes);
+    }
+    for (j = 0; j < i && nodes->insert_selector->next != NULL && nodes->insert_selector->next->ch != '\n'; j++) {
+        input_normal_l(nodes);
+    }
+}
 enum bool input_normal(struct global* global, char ch) {
     uint32_t i, j;
     switch (ch) {
@@ -186,25 +208,7 @@ enum bool input_normal(struct global* global, char ch) {
             input_normal_l(&global->nodes);
             return false;
         case 'j':
-            for (i = 0; global->nodes.insert_selector->prev != NULL; i++) {
-                if (global->nodes.insert_selector->prev->ch == '\n') {
-                    break;
-                }
-                input_normal_h(&global->nodes);
-            }
-            if (global->nodes.insert_selector->prev == NULL) {
-                return false;
-            }
-            input_normal_h(&global->nodes);
-            while (global->nodes.insert_selector->prev != NULL) {
-                if (global->nodes.insert_selector->prev->ch == '\n') {
-                    break;
-                }
-                input_normal_h(&global->nodes);
-            }
-            for (j = 0; j < i && global->nodes.insert_selector->next != NULL && global->nodes.insert_selector->next->ch != '\n'; j++) {
-                input_normal_l(&global->nodes);
-            }
+            input_normal_j(&global->nodes);
             return false;
         case 'k':
             for (i = 0; global->nodes.insert_selector->prev != NULL; i++) {
