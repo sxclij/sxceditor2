@@ -146,26 +146,12 @@ enum result file_write(const char* path, struct node* src) {
     }
     return ok;
 }
-void cmd_openfile(struct nodes* nodes, const char* path) {
-    char buf[buf_capacity];
+enum result cmd_openfile(struct nodes* nodes, const char* path) {
     nodes_clear(nodes, nodes->insert_selector);
-    if (file_read(nodes, nodes->insert_selector, path) == ok) {
-        sprintf(buf, "open %s succeeded.", path);
-        nodes_replace_str(nodes, nodes->message_selector, buf);
-    } else {
-        sprintf(buf, "open %s failed.", path);
-        nodes_replace_str(nodes, nodes->message_selector, buf);
-    }
+    file_read(nodes, nodes->insert_selector, path);
 }
-void cmd_savefile(struct nodes* nodes, const char* path) {
-    char buf[buf_capacity];
-    if (file_write(path, nodes->insert_selector) == ok) {
-        sprintf(buf, "save %s succeeded.", path);
-        nodes_replace_str(nodes, nodes->message_selector, buf);
-    } else {
-        sprintf(buf, "save %s failed.", path);
-        nodes_replace_str(nodes, nodes->message_selector, buf);
-    }
+enum result cmd_savefile(struct nodes* nodes, const char* path) {
+    file_write(path, nodes->insert_selector);
 }
 enum result cmd_exec(struct global* global, struct node* this) {
     char buf[buf_capacity];
@@ -181,10 +167,22 @@ enum result cmd_exec(struct global* global, struct node* this) {
     if (strcmp(buf, "exit") == 0 || strcmp(buf, "quit") == 0 || strcmp(buf, "q") == 0) {
         return err;
     } else if (strcmp(buf, "open") == 0) {
-        cmd_openfile(&global->nodes, option);
+        if (cmd_openfile(&global->nodes, option) == ok) {
+            sprintf(buf, "open %s succeeded.", option);
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, buf);
+        } else {
+            sprintf(buf, "open %s failed.", option);
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, buf);
+        }
         return ok;
     } else if (strcmp(buf, "save") == 0) {
-        cmd_savefile(&global->nodes, option);
+        if (cmd_savefile(&global->nodes, option) == ok) {
+            sprintf(buf, "save %s succeeded.", option);
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, buf);
+        } else {
+            sprintf(buf, "save %s failed.", option);
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, buf);
+        }
         return ok;
     } else {
         nodes_replace_str(&global->nodes, global->nodes.message_selector, "command not found.");
