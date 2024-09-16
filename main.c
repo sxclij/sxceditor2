@@ -150,34 +150,37 @@ enum bool cmd_openfile(struct nodes* nodes, const char* path) {
     nodes_clear(nodes, nodes->insert_selector);
     return file_read(nodes, nodes->insert_selector, path);
 }
-enum bool cmd_exec(struct global* global, struct node* this) {
-    char buf1[buf_capacity];
-    char buf2[buf_capacity];
-    char buf3[buf_capacity];
-    uint32_t i;
-    nodes_to_str(buf1, this);
-    nodes_clear(&global->nodes, global->nodes.message_selector);
-    for (i = 0; buf1[i] != ' ' && buf1[i] != '\0'; i++) {
-        buf2[i] = buf1[i];
+void cmd_savefile(struct nodes* nodes, const char* path) {
+    if (file_write(path, nodes->insert_selector)) {
+        nodes_replace_str(nodes, nodes->message_selector, "save failed.");
+    } else {
+        nodes_replace_str(nodes, nodes->message_selector, "save succeeded.");
     }
-    buf2[i++] = '\0';
-    if (strcmp(buf2, "exit") == 0 || strcmp(buf2, "quit") == 0 || strcmp(buf2, "q") == 0) {
+}
+enum bool cmd_exec(struct global* global, struct node* this) {
+    char buf[buf_capacity];
+    char* option;
+    uint32_t i = 0;
+    while (buf[i] != ' ' && buf[i] != '\0') {
+        i++;
+    }
+    buf[i++] = '\0';
+    option = buf + i;
+    nodes_to_str(buf, this);
+    nodes_clear(&global->nodes, global->nodes.message_selector);
+    if (strcmp(buf, "exit") == 0 || strcmp(buf, "quit") == 0 || strcmp(buf, "q") == 0) {
         return true;
-    } else if (strcmp(buf2, "open") == 0) {
-        if (cmd_openfile(&global->nodes, buf1 + i)) {
-            sprintf(buf3, "open %s failed.", buf1 + i);
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, buf3);
+    } else if (strcmp(buf, "open") == 0) {
+        if (cmd_openfile(&global->nodes, buf + i)) {
+            sprintf(option, "open %s failed.", buf + i);
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, option);
         } else {
-            sprintf(buf3, "open %s succeeded.", buf1 + i);
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, buf3);
+            sprintf(option, "open %s succeeded.", buf + i);
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, option);
         }
         return false;
-    } else if (strcmp(buf2, "save") == 0) {
-        if (file_write(buf1 + i, global->nodes.insert_selector)) {
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, "save failed.");
-        } else {
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, "save succeeded.");
-        }
+    } else if (strcmp(buf, "save") == 0) {
+        cmd_savefile(&global->nodes, buf + i);
         return false;
     } else {
         nodes_replace_str(&global->nodes, global->nodes.message_selector, "command not found.");
