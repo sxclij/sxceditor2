@@ -138,7 +138,7 @@ enum bool cmd_exec(struct global* global, struct node* this) {
         buf2[i] = buf1[i];
     }
     buf2[i++] = '\0';
-    if (strcmp(buf2, "exit") == 0 || strcmp(buf2, "quit") == 0) {
+    if (strcmp(buf2, "exit") == 0 || strcmp(buf2, "quit") == 0 || strcmp(buf2, "q") == 0) {
         return true;
     }
     if (strcmp(buf2, "open") == 0) {
