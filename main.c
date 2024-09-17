@@ -247,30 +247,28 @@ void input_normal_k(struct nodes* nodes) {
         input_normal_l(nodes);
     }
 }
-enum result input_normal(struct global* global, char ch) {
+void input_normal(struct global* global, char ch) {
     switch (ch) {
         case 'i':
             global->mode = mode_insert;
-            return ok;
+            return;
         case ':':
             global->mode = mode_cmd;
-            return ok;
-        case 'q':
-            return err;
+            return;
         case 'h':
             input_normal_h(&global->nodes);
-            return ok;
+            return;
         case 'l':
             input_normal_l(&global->nodes);
-            return ok;
+            return;
         case 'j':
             input_normal_j(&global->nodes);
-            return ok;
+            return;
         case 'k':
             input_normal_k(&global->nodes);
-            return ok;
+            return;
         default:
-            return ok;
+            return;
     }
 }
 enum result input_cmd(struct global* global, char ch) {
@@ -297,28 +295,30 @@ enum result input_cmd(struct global* global, char ch) {
             return ok;
     }
 }
-enum result input_insert(struct global* global, char ch) {
+void input_insert(struct global* global, char ch) {
     switch (ch) {
         case 27:
             global->mode = mode_normal;
-            return ok;
+            return;
         case '\b':
         case 127:
             if (global->nodes.insert_selector->prev != NULL) {
                 nodes_delete(&global->nodes, global->nodes.insert_selector->prev);
             }
-            return ok;
+            return;
         default:
             nodes_insert(&global->nodes, global->nodes.insert_selector, ch);
-            return ok;
+            return;
     }
 }
 enum result input_ch(struct global* global, char ch) {
     if (global->mode == mode_normal) {
-        return input_normal(global, ch);
+        input_normal(global, ch);
+        return ok;
     }
     if (global->mode == mode_insert) {
-        return input_insert(global, ch);
+        input_insert(global, ch);
+        return ok;
     }
     if (global->mode == mode_cmd) {
         return input_cmd(global, ch);
