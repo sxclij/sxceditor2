@@ -193,18 +193,10 @@ void input_normal_h(struct nodes* nodes) {
     if (nodes->insert_selector->prev != NULL) {
         nodes->insert_selector = nodes->insert_selector->prev;
     }
-    if (nodes->insert_selector->prev != NULL) {
-        if (nodes->insert_selector->ch == '\n')
-            nodes->insert_selector = nodes->insert_selector->prev;
-    }
 }
 void input_normal_l(struct nodes* nodes) {
     if (nodes->insert_selector->next != NULL) {
         nodes->insert_selector = nodes->insert_selector->next;
-    }
-    if (nodes->insert_selector->next != NULL) {
-        if (nodes->insert_selector->ch == '\r')
-            nodes->insert_selector = nodes->insert_selector->next;
     }
 }
 void input_normal_j(struct nodes* nodes) {
