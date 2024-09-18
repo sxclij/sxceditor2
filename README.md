@@ -14,7 +14,7 @@ SXCEditor2 is a simple, terminal-based text editor written in C. It provides bas
 To build SXCEditor2, ensure you have a C compiler (like gcc) installed on your system. Then, compile the source code:
 
 ```
-gcc -o sxceditor22 sxceditor22.c
+gcc -o sxceditor2 sxceditor2.c
 ```
 
 ## Usage
@@ -22,7 +22,7 @@ gcc -o sxceditor22 sxceditor22.c
 Run the editor:
 
 ```
-./sxceditor22
+./sxceditor2
 ```
 
 ### Modes
