@@ -1,6 +1,6 @@
-# SXCEditor2
+# sxceditor2
 
-SXCEditor2 is a simple, terminal-based text editor written in C. It provides basic text editing functionality with a vim-like interface.
+sxceditor2 is a simple, terminal-based text editor written in C. It provides basic text editing functionality with a vim-like interface.
 
 ## Features
 
@@ -11,7 +11,7 @@ SXCEditor2 is a simple, terminal-based text editor written in C. It provides bas
 
 ## Building
 
-To build SXCEditor2, ensure you have a C compiler (like gcc) installed on your system. Then, compile the source code:
+To build sxceditor2, ensure you have a C compiler (like gcc) installed on your system. Then, compile the source code:
 
 ```
 gcc -o sxceditor2 sxceditor2.c
@@ -57,7 +57,7 @@ Press `Esc` to return to normal mode from insert or command mode.
 
 ## Contributing
 
-Contributions to improve SXCEditor2 are welcome. Please feel free to submit pull requests or open issues for bugs and feature requests.
+Contributions to improve sxceditor2 are welcome. Please feel free to submit pull requests or open issues for bugs and feature requests.
 
 ## License
 
