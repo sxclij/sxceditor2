@@ -2,6 +2,10 @@
 
 sxceditor2 is a simple, terminal-based text editor written in C. It provides basic text editing functionality with a vim-like interface.
 
+For a detailed explanation of the development process and implementation details, check out the article:
+テキストエディタをフルスクラッチで書いてみた #C - Qiita
+https://qiita.com/sxclij/items/177af8d39e18bb536b0d
+
 ## Features
 
 - Vim-like modal editing (Normal, Insert, and Command modes)
