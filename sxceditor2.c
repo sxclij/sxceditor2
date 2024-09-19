@@ -168,20 +168,16 @@ enum result cmd_exec(struct global* global, struct node* this) {
         return err;
     } else if (strcmp(buf, "open") == 0) {
         if (cmd_openfile(&global->nodes, option) == ok) {
-            sprintf(buf, "open %s succeeded.", option);
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, buf);
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, "open succeeded.");
         } else {
-            sprintf(buf, "open %s failed.", option);
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, buf);
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, "open failed.");
         }
         return ok;
     } else if (strcmp(buf, "save") == 0) {
         if (cmd_savefile(&global->nodes, option) == ok) {
-            sprintf(buf, "save %s succeeded.", option);
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, buf);
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, "save succeeded.");
         } else {
-            sprintf(buf, "save %s failed.", option);
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, buf);
+            nodes_replace_str(&global->nodes, global->nodes.message_selector, "save failed.");
         }
         return ok;
     } else {
