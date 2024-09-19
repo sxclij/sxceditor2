@@ -203,17 +203,13 @@ void input_normal_j(struct nodes* nodes) {
         }
         input_normal_h(nodes);
     }
-    if (nodes->insert_selector->prev == NULL) {
-        return;
-    }
-    input_normal_h(nodes);
-    while (nodes->insert_selector->prev != NULL) {
-        if (nodes->insert_selector->prev->ch == '\n') {
+    while (nodes->insert_selector->next != NULL) {
+        if (nodes->insert_selector->ch == '\n') {
             break;
         }
-        input_normal_h(nodes);
+        input_normal_l(nodes);
     }
-    for (j = 0; j < i && nodes->insert_selector->next != NULL && nodes->insert_selector->next->ch != '\n'; j++) {
+    for (j = 0; j < i + 1 && nodes->insert_selector->next != NULL && nodes->insert_selector->next->ch != '\n'; j++) {
         input_normal_l(nodes);
     }
 }
@@ -225,13 +221,17 @@ void input_normal_k(struct nodes* nodes) {
         }
         input_normal_h(nodes);
     }
-    while (nodes->insert_selector->next != NULL) {
-        if (nodes->insert_selector->ch == '\n') {
+    if (nodes->insert_selector->prev == NULL) {
+        return;
+    }
+    input_normal_h(nodes);
+    while (nodes->insert_selector->prev != NULL) {
+        if (nodes->insert_selector->prev->ch == '\n') {
             break;
         }
-        input_normal_l(nodes);
+        input_normal_h(nodes);
     }
-    for (j = 0; j < i + 1 && nodes->insert_selector->next != NULL && nodes->insert_selector->next->ch != '\n'; j++) {
+    for (j = 0; j < i && nodes->insert_selector->next != NULL && nodes->insert_selector->next->ch != '\n'; j++) {
         input_normal_l(nodes);
     }
 }
