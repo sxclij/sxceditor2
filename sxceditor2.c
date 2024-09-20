@@ -384,7 +384,6 @@ void draw(struct global* global) {
     draw_cmd(global->nodes.cmd_selector);
     write(STDOUT_FILENO, "\n", 1);
     draw_text(global->nodes.insert_selector, err);
-    fflush(stdout);
 }
 void draw_deinit() {
     draw_clear();
