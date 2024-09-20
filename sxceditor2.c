@@ -320,7 +320,7 @@ enum result input_ch(struct global* global, char ch) {
         return err;
     }
 }
-enum result input(struct global* global) {
+enum result input_update(struct global* global) {
     char buf[term_capacity];
     uint32_t n = term_read(buf);
     for (uint32_t i = 0; i < n; i++) {
@@ -383,7 +383,7 @@ void draw_cmd(struct node* cmd_selector) {
         draw_text(cmd_selector, ok);
     }
 }
-void draw(struct global* global) {
+void draw_update(struct global* global) {
     draw_clear();
     draw_info(global->mode);
     draw_message(global->nodes.message_selector);
@@ -396,12 +396,12 @@ void draw_deinit() {
     write(STDOUT_FILENO, "sxceditor exit.\n", 17);
 }
 enum result update(struct global* global) {
-    if (input(global) == ok) {
-        draw(global);
-        return ok;
-    } else {
+    if (input_update(global) == err) {
         return err;
     }
+    term_update(&global->term);
+    draw_update(global);
+    return ok;
 }
 void init(struct global* global) {
     term_init(&global->term);
