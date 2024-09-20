@@ -219,13 +219,14 @@ void input_normal_l(struct nodes* nodes) {
 }
 void input_normal_j(struct nodes* nodes) {
     uint32_t x = nodes_get_left(nodes->insert_selector);
-    while(nodes->insert_selector->ch != '\n') {
-        if(nodes->insert_selector->next == NULL) {
+    while (nodes->insert_selector->ch != '\n') {
+        if (nodes->insert_selector->next == NULL) {
             return;
         }
         input_normal_l(nodes);
     }
-    for(uint32_t i = 0; i < x+1; i++) {
+    input_normal_l(nodes);
+    for (uint32_t i = 0; i < x; i++) {
         input_normal_l(nodes);
     }
 }
