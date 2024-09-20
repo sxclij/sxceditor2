@@ -13,6 +13,10 @@ enum result {
     ok = 0,
     err = 1,
 };
+enum bool {
+    false = 0,
+    true = 1,
+};
 enum mode {
     mode_normal,
     mode_insert,
@@ -336,10 +340,10 @@ void draw_clear() {
     write(STDOUT_FILENO, "\x1b[2J", 4);
     write(STDOUT_FILENO, "\x1b[1;1H", 7);
 }
-void draw_text(struct node* this, enum result is_cursor) {
+void draw_text(struct node* this, uint32_t size_y, enum bool is_cursor) {
     struct node* itr = this;
     uint32_t i;
-    for (i = 0; itr->prev != NULL && i < 6;) {
+    for (i = 0; itr->prev != NULL && i < size_y / 3 + 1;) {
         itr = itr->prev;
         if (itr->ch == '\n') {
             i++;
@@ -348,8 +352,8 @@ void draw_text(struct node* this, enum result is_cursor) {
     if (itr->ch == '\n' && itr->prev != NULL) {
         itr = itr->next;
     }
-    for (i = 0; i < 15 && itr != NULL;) {
-        if (itr == this && is_cursor) {
+    for (i = 0; i < size_y && itr != NULL;) {
+        if (itr == this && is_cursor == true) {
             write(STDOUT_FILENO, "|", 1);
         }
         if (itr->ch == '\n') {
@@ -373,14 +377,14 @@ void draw_info(enum mode mode) {
 void draw_message(struct node* message_selector) {
     if (message_selector->prev != NULL) {
         write(STDOUT_FILENO, ", message: [", 12);
-        draw_text(message_selector, ok);
+        draw_text(message_selector, 1, false);
         write(STDOUT_FILENO, "]", 1);
     }
 }
 void draw_cmd(struct node* cmd_selector) {
     if (cmd_selector->prev != NULL) {
         write(STDOUT_FILENO, ", cmd: ", 7);
-        draw_text(cmd_selector, ok);
+        draw_text(cmd_selector, 1, false);
     }
 }
 void draw_update(struct global* global) {
@@ -389,7 +393,7 @@ void draw_update(struct global* global) {
     draw_message(global->nodes.message_selector);
     draw_cmd(global->nodes.cmd_selector);
     write(STDOUT_FILENO, "\n", 1);
-    draw_text(global->nodes.insert_selector, err);
+    draw_text(global->nodes.insert_selector, global->term.ws.ws_row-2, true);
 }
 void draw_deinit() {
     draw_clear();
