@@ -230,26 +230,7 @@ void input_normal_j(struct nodes* nodes) {
     }
 }
 void input_normal_k(struct nodes* nodes) {
-    uint32_t i, j;
-    for (i = 0; nodes->insert_selector->prev != NULL; i++) {
-        if (nodes->insert_selector->prev->ch == '\n') {
-            break;
-        }
-        input_normal_h(nodes);
-    }
-    if (nodes->insert_selector->prev == NULL) {
-        return;
-    }
-    input_normal_h(nodes);
-    while (nodes->insert_selector->prev != NULL) {
-        if (nodes->insert_selector->prev->ch == '\n') {
-            break;
-        }
-        input_normal_h(nodes);
-    }
-    for (j = 0; j < i && nodes->insert_selector->next != NULL && nodes->insert_selector->next->ch != '\n'; j++) {
-        input_normal_l(nodes);
-    }
+    
 }
 void input_normal(struct global* global, char ch) {
     switch (ch) {
