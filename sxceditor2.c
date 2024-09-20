@@ -149,6 +149,7 @@ enum result file_write(const char* path, struct node* src) {
     for (; itr->next != NULL; itr = itr->next) {
         fputc(itr->ch, fp);
     }
+    fclose(fp);
     return ok;
 }
 enum result cmd_openfile(struct nodes* nodes, const char* path) {
