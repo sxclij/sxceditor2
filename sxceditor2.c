@@ -105,7 +105,7 @@ void nodes_replace_str(struct nodes* nodes, struct node* this, const char* src) 
     nodes_clear(nodes, this);
     nodes_insert_str(nodes, this, src);
 }
-uint32_t nodes_get_left(struct node* this) {
+uint32_t nodes_line_left(struct node* this) {
     struct node* itr = this->prev;
     uint32_t i = 0;
     while (itr != NULL) {
@@ -218,7 +218,7 @@ void input_normal_l(struct nodes* nodes) {
     }
 }
 void input_normal_j(struct nodes* nodes) {
-    uint32_t x = nodes_get_left(nodes->insert_selector);
+    uint32_t x = nodes_line_left(nodes->insert_selector);
     while (nodes->insert_selector->ch != '\n') {
         if (nodes->insert_selector->next == NULL) {
             return;
