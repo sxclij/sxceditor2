@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -19,6 +20,7 @@ enum mode {
     mode_raw,
 };
 struct term {
+    struct winsize ws;
     struct termios old;
     struct termios new;
 };
@@ -45,6 +47,9 @@ uint32_t term_read(char* dst) {
 }
 void term_deinit(struct term* term) {
     tcsetattr(STDIN_FILENO, TCSANOW, &term->old);
+}
+void term_update(struct term* term) {
+    ioctl(STDIN_FILENO, TIOCGWINSZ, &term->ws);
 }
 void term_init(struct term* term) {
     tcgetattr(STDIN_FILENO, &term->old);
