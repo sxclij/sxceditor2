@@ -114,6 +114,16 @@ uint32_t nodes_line_left(struct node* this) {
     }
     return i;
 }
+struct node* nodes_line_begin(struct node* this) {
+    struct node* itr = this;
+    while (itr->prev != NULL) {
+        if (itr->prev->ch == '\n') {
+            break;
+        }
+        itr = itr->prev;
+    }
+    return itr;
+}
 struct node* nodes_line_rbegin(struct node* this) {
     struct node* itr = this;
     while (itr->next != NULL && itr->ch != '\n') {
@@ -230,7 +240,13 @@ void input_normal_j(struct nodes* nodes) {
     }
 }
 void input_normal_k(struct nodes* nodes) {
-    
+    uint32_t x = nodes_line_left(nodes->insert_selector);
+    nodes->insert_selector = nodes_line_begin(nodes->insert_selector);
+    input_normal_h(nodes);
+    nodes->insert_selector = nodes_line_begin(nodes->insert_selector);
+    for (uint32_t i = 0; i < x && nodes->insert_selector != NULL && nodes->insert_selector->ch != '\n'; i++) {
+        input_normal_l(nodes);
+    }
 }
 void input_normal(struct global* global, char ch) {
     switch (ch) {
@@ -380,7 +396,7 @@ void draw_update(struct global* global) {
     draw_message(global->nodes.message_selector);
     draw_cmd(global->nodes.cmd_selector);
     write(STDOUT_FILENO, "\n", 1);
-    draw_text(global->nodes.insert_selector, global->term.ws.ws_row-2, true);
+    draw_text(global->nodes.insert_selector, global->term.ws.ws_row - 2, true);
 }
 void draw_deinit() {
     draw_clear();
