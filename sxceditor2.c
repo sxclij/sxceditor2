@@ -96,6 +96,27 @@ void nodes_clear(struct nodes* nodes, struct node* this) {
     }
     itr->ch = '\0';
 }
+void nodes_insert_str(struct nodes* nodes, struct node* next, const char* src) {
+    for (uint32_t i = 0; src[i] != '\0'; i++) {
+        nodes_insert(nodes, next, src[i]);
+    }
+}
+void nodes_replace_str(struct nodes* nodes, struct node* this, const char* src) {
+    nodes_clear(nodes, this);
+    nodes_insert_str(nodes, this, src);
+}
+uint32_t nodes_get_left(struct node* this) {
+    struct node* itr = this->prev;
+    uint32_t i = 0;
+    while (itr != NULL) {
+        if(itr->ch == '\n') {
+            break;
+        }
+        itr = itr->prev;
+        i++;
+    }
+    return i;
+}
 void nodes_to_str(char* dst, struct node* src) {
     struct node* itr = src;
     uint32_t i;
@@ -107,15 +128,6 @@ void nodes_to_str(char* dst, struct node* src) {
         itr = itr->next;
     }
     dst[i + 1] = '\0';
-}
-void nodes_insert_str(struct nodes* nodes, struct node* next, const char* src) {
-    for (uint32_t i = 0; src[i] != '\0'; i++) {
-        nodes_insert(nodes, next, src[i]);
-    }
-}
-void nodes_replace_str(struct nodes* nodes, struct node* this, const char* src) {
-    nodes_clear(nodes, this);
-    nodes_insert_str(nodes, this, src);
 }
 void nodes_init(struct nodes* nodes) {
     nodes->passive_size = nodes_capacity;
@@ -206,20 +218,14 @@ void input_normal_l(struct nodes* nodes) {
     }
 }
 void input_normal_j(struct nodes* nodes) {
-    uint32_t i, j;
-    for (i = 0; nodes->insert_selector->prev != NULL; i++) {
-        if (nodes->insert_selector->prev->ch == '\n') {
-            break;
-        }
-        input_normal_h(nodes);
-    }
-    while (nodes->insert_selector->next != NULL) {
-        if (nodes->insert_selector->ch == '\n') {
-            break;
+    uint32_t x = nodes_get_left(nodes->insert_selector);
+    while(nodes->insert_selector->ch != '\n') {
+        if(nodes->insert_selector->next == NULL) {
+            return;
         }
         input_normal_l(nodes);
     }
-    for (j = 0; j < i + 1 && nodes->insert_selector->next != NULL && nodes->insert_selector->next->ch != '\n'; j++) {
+    for(uint32_t i = 0; i < x+1; i++) {
         input_normal_l(nodes);
     }
 }
