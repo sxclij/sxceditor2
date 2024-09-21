@@ -154,13 +154,22 @@ void nodes_to_str(char* dst, struct node* src) {
     dst[i + 1] = '\0';
 }
 void nodes_init(struct nodes* nodes) {
-    nodes->passive_size = nodes_capacity;
-    for (uint32_t i = 0; i < nodes_capacity; i++) {
-        nodes->passive[i] = &nodes->data[i];
+    nodes->passive_selector = nodes->data;
+    for(uint32_t i = 0; i < nodes_capacity-1; i++) {
+        nodes_free(nodes, &nodes->data[i+1]);
     }
-    nodes->insert_selector = nodes->passive[--nodes->passive_size];
-    nodes->cmd_selector = nodes->passive[--nodes->passive_size];
-    nodes->message_selector = nodes->passive[--nodes->passive_size];
+    nodes->insert_selector = nodes_allocate(nodes);
+    nodes->cmd_selector = nodes_allocate(nodes);
+    nodes->message_selector = nodes_allocate(nodes);
+    nodes->insert_selector->ch = '\0';
+    nodes->insert_selector->prev = NULL;
+    nodes->insert_selector->next = NULL;
+    nodes->cmd_selector->ch = '\0';
+    nodes->cmd_selector->prev = NULL;
+    nodes->cmd_selector->next = NULL;
+    nodes->message_selector->ch = '\0';
+    nodes->message_selector->prev = NULL;
+    nodes->message_selector->next = NULL;
 }
 enum result file_read(struct nodes* nodes, struct node* dst, const char* path) {
     FILE* fp = fopen(path, "r");
