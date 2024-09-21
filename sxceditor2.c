@@ -35,6 +35,7 @@ struct node {
 };
 struct nodes {
     struct node data[nodes_capacity];
+    struct node* passive_selector;
     struct node* insert_selector;
     struct node* cmd_selector;
     struct node* message_selector;
@@ -61,8 +62,19 @@ void term_init(struct term* term) {
     term->new.c_cc[VTIME] = 0;
     tcsetattr(STDIN_FILENO, TCSANOW, &term->new);
 }
+
+void nodes_free(struct nodes* nodes, struct node* this) {
+    this->prev = nodes->passive_selector;
+    nodes->passive_selector->next = this;
+    nodes->passive_selector = this;
+}
+struct node* nodes_allocate(struct nodes* nodes) {
+    struct node* this = nodes->passive_selector;
+    nodes->passive_selector = nodes->passive_selector->prev;
+    return this;
+}
 struct node* nodes_insert(struct nodes* nodes, struct node* next, char ch) {
-    struct node* this = nodes->passive[--nodes->passive_size];
+    struct node* this = nodes_allocate(nodes);
     struct node* prev = next->prev;
     this->ch = ch;
     this->next = next;
@@ -76,7 +88,7 @@ struct node* nodes_insert(struct nodes* nodes, struct node* next, char ch) {
 void nodes_delete(struct nodes* nodes, struct node* this) {
     struct node* next = this->next;
     struct node* prev = this->prev;
-    nodes->passive[nodes->passive_size++] = this;
+    nodes_free(nodes, this);
     if (next != NULL) {
         next->prev = prev;
     }
