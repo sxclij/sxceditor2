@@ -159,14 +159,14 @@ void nodes_init(struct nodes* nodes) {
         nodes_free(nodes, &nodes->data[i+1]);
     }
     nodes->insert_selector = nodes_allocate(nodes);
-    nodes->cmd_selector = nodes_allocate(nodes);
-    nodes->message_selector = nodes_allocate(nodes);
     nodes->insert_selector->ch = '\0';
     nodes->insert_selector->prev = NULL;
     nodes->insert_selector->next = NULL;
+    nodes->cmd_selector = nodes_allocate(nodes);
     nodes->cmd_selector->ch = '\0';
     nodes->cmd_selector->prev = NULL;
     nodes->cmd_selector->next = NULL;
+    nodes->message_selector = nodes_allocate(nodes);
     nodes->message_selector->ch = '\0';
     nodes->message_selector->prev = NULL;
     nodes->message_selector->next = NULL;
