@@ -5,9 +5,9 @@
 #include <termios.h>
 #include <unistd.h>
 
-#define term_capacity 65536
-#define nodes_capacity 65536
-#define buf_capacity 65536
+#define nodes_capacity (1<<18)
+#define term_capacity (1<<16)
+#define buf_capacity (1<<16)
 
 enum result {
     ok = 0,
