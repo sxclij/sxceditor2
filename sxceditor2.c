@@ -35,11 +35,9 @@ struct node {
 };
 struct nodes {
     struct node data[nodes_capacity];
-    struct node* passive[nodes_capacity];
     struct node* insert_selector;
     struct node* cmd_selector;
     struct node* message_selector;
-    uint32_t passive_size;
 };
 struct global {
     struct term term;
