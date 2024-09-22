@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #define nodes_capacity (1<<18)
+#define script_capacity (1<<16)
 #define term_capacity (1<<16)
 #define buf_capacity (1<<16)
 
@@ -39,6 +40,12 @@ struct nodes {
     struct node* insert_selector;
     struct node* cmd_selector;
     struct node* message_selector;
+};
+struct script {
+    int32_t mem[script_capacity];
+    uint32_t pc;
+    uint32_t sp;
+    uint32_t bp;  
 };
 struct global {
     struct term term;
