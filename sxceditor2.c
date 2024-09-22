@@ -50,6 +50,7 @@ struct script {
 struct global {
     struct term term;
     struct nodes nodes;
+    struct script script;
     enum mode mode;
 };
 uint32_t term_read(char* dst) {
