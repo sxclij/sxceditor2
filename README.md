@@ -30,7 +30,7 @@ https://qiita.com/sxclij/items/177af8d39e18bb536b0d
 To build sxceditor2, ensure you have a C compiler (like gcc) installed on your system. Then, compile the source code:
 
 ```
-gcc -o sxceditor2 sxceditor2.c
+gcc -o sxceditor2 main.c
 ```
 
 ## Usage
