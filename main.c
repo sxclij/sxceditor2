@@ -36,10 +36,10 @@ struct node {
 };
 struct nodes {
     struct node data[nodes_capacity];
-    struct node* passive_selector;
-    struct node* insert_selector;
-    struct node* cmd_selector;
-    struct node* message_selector;
+    struct node* free_itr;
+    struct node* text_itr;
+    struct node* cmd_itr;
+    struct node* message_itr;
 };
 struct script {
     int32_t mem[script_capacity];
@@ -72,13 +72,13 @@ void term_init(struct term* term) {
 }
 
 void nodes_free(struct nodes* nodes, struct node* this) {
-    this->prev = nodes->passive_selector;
-    nodes->passive_selector->next = this;
-    nodes->passive_selector = this;
+    this->prev = nodes->free_itr;
+    nodes->free_itr->next = this;
+    nodes->free_itr = this;
 }
 struct node* nodes_allocate(struct nodes* nodes) {
-    struct node* this = nodes->passive_selector;
-    nodes->passive_selector = nodes->passive_selector->prev;
+    struct node* this = nodes->free_itr;
+    nodes->free_itr = nodes->free_itr->prev;
     return this;
 }
 struct node* nodes_insert(struct nodes* nodes, struct node* next, char ch) {
@@ -162,22 +162,22 @@ void nodes_to_str(char* dst, struct node* src) {
     dst[i + 1] = '\0';
 }
 void nodes_init(struct nodes* nodes) {
-    nodes->passive_selector = nodes->data;
+    nodes->free_itr = nodes->data;
     for(uint32_t i = 0; i < nodes_capacity-1; i++) {
         nodes_free(nodes, &nodes->data[i+1]);
     }
-    nodes->insert_selector = nodes_allocate(nodes);
-    nodes->insert_selector->ch = '\0';
-    nodes->insert_selector->prev = NULL;
-    nodes->insert_selector->next = NULL;
-    nodes->cmd_selector = nodes_allocate(nodes);
-    nodes->cmd_selector->ch = '\0';
-    nodes->cmd_selector->prev = NULL;
-    nodes->cmd_selector->next = NULL;
-    nodes->message_selector = nodes_allocate(nodes);
-    nodes->message_selector->ch = '\0';
-    nodes->message_selector->prev = NULL;
-    nodes->message_selector->next = NULL;
+    nodes->text_itr = nodes_allocate(nodes);
+    nodes->text_itr->ch = '\0';
+    nodes->text_itr->prev = NULL;
+    nodes->text_itr->next = NULL;
+    nodes->cmd_itr = nodes_allocate(nodes);
+    nodes->cmd_itr->ch = '\0';
+    nodes->cmd_itr->prev = NULL;
+    nodes->cmd_itr->next = NULL;
+    nodes->message_itr = nodes_allocate(nodes);
+    nodes->message_itr->ch = '\0';
+    nodes->message_itr->prev = NULL;
+    nodes->message_itr->next = NULL;
 }
 enum result file_read(struct nodes* nodes, struct node* dst, const char* path) {
     FILE* fp = fopen(path, "r");
@@ -210,18 +210,18 @@ enum result file_write(const char* path, struct node* src) {
     return ok;
 }
 enum result cmd_openfile(struct nodes* nodes, const char* path) {
-    nodes_clear(nodes, nodes->insert_selector);
-    return file_read(nodes, nodes->insert_selector, path);
+    nodes_clear(nodes, nodes->text_itr);
+    return file_read(nodes, nodes->text_itr, path);
 }
 enum result cmd_savefile(struct nodes* nodes, const char* path) {
-    return file_write(path, nodes->insert_selector);
+    return file_write(path, nodes->text_itr);
 }
 enum result cmd_exec(struct global* global, struct node* this) {
     char buf[buf_capacity];
     char* option;
     uint32_t i = 0;
     nodes_to_str(buf, this);
-    nodes_clear(&global->nodes, global->nodes.message_selector);
+    nodes_clear(&global->nodes, global->nodes.message_itr);
     while (buf[i] != ' ' && buf[i] != '\0') {
         i++;
     }
@@ -231,47 +231,47 @@ enum result cmd_exec(struct global* global, struct node* this) {
         return err;
     } else if (strcmp(buf, "open") == 0) {
         if (cmd_openfile(&global->nodes, option) == ok) {
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, "open succeeded.");
+            nodes_replace_str(&global->nodes, global->nodes.message_itr, "open succeeded.");
         } else {
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, "open failed.");
+            nodes_replace_str(&global->nodes, global->nodes.message_itr, "open failed.");
         }
         return ok;
     } else if (strcmp(buf, "save") == 0) {
         if (cmd_savefile(&global->nodes, option) == ok) {
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, "save succeeded.");
+            nodes_replace_str(&global->nodes, global->nodes.message_itr, "save succeeded.");
         } else {
-            nodes_replace_str(&global->nodes, global->nodes.message_selector, "save failed.");
+            nodes_replace_str(&global->nodes, global->nodes.message_itr, "save failed.");
         }
         return ok;
     } else {
-        nodes_replace_str(&global->nodes, global->nodes.message_selector, "command not found.");
+        nodes_replace_str(&global->nodes, global->nodes.message_itr, "command not found.");
         return ok;
     }
 }
 void input_normal_h(struct nodes* nodes) {
-    if (nodes->insert_selector->prev != NULL) {
-        nodes->insert_selector = nodes->insert_selector->prev;
+    if (nodes->text_itr->prev != NULL) {
+        nodes->text_itr = nodes->text_itr->prev;
     }
 }
 void input_normal_l(struct nodes* nodes) {
-    if (nodes->insert_selector->next != NULL) {
-        nodes->insert_selector = nodes->insert_selector->next;
+    if (nodes->text_itr->next != NULL) {
+        nodes->text_itr = nodes->text_itr->next;
     }
 }
 void input_normal_j(struct nodes* nodes) {
-    uint32_t x = nodes_line_left(nodes->insert_selector);
-    nodes->insert_selector = nodes_line_rbegin(nodes->insert_selector);
+    uint32_t x = nodes_line_left(nodes->text_itr);
+    nodes->text_itr = nodes_line_rbegin(nodes->text_itr);
     input_normal_l(nodes);
-    for (uint32_t i = 0; i < x && nodes->insert_selector != NULL && nodes->insert_selector->ch != '\n'; i++) {
+    for (uint32_t i = 0; i < x && nodes->text_itr != NULL && nodes->text_itr->ch != '\n'; i++) {
         input_normal_l(nodes);
     }
 }
 void input_normal_k(struct nodes* nodes) {
-    uint32_t x = nodes_line_left(nodes->insert_selector);
-    nodes->insert_selector = nodes_line_begin(nodes->insert_selector);
+    uint32_t x = nodes_line_left(nodes->text_itr);
+    nodes->text_itr = nodes_line_begin(nodes->text_itr);
     input_normal_h(nodes);
-    nodes->insert_selector = nodes_line_begin(nodes->insert_selector);
-    for (uint32_t i = 0; i < x && nodes->insert_selector != NULL && nodes->insert_selector->ch != '\n'; i++) {
+    nodes->text_itr = nodes_line_begin(nodes->text_itr);
+    for (uint32_t i = 0; i < x && nodes->text_itr != NULL && nodes->text_itr->ch != '\n'; i++) {
         input_normal_l(nodes);
     }
 }
@@ -305,8 +305,8 @@ enum result input_cmd(struct global* global, char ch) {
             global->mode = mode_normal;
             return ok;
         case '\n':
-            if (cmd_exec(global, global->nodes.cmd_selector) == ok) {
-                nodes_clear(&global->nodes, global->nodes.cmd_selector);
+            if (cmd_exec(global, global->nodes.cmd_itr) == ok) {
+                nodes_clear(&global->nodes, global->nodes.cmd_itr);
                 global->mode = mode_normal;
                 return ok;
             } else {
@@ -314,12 +314,12 @@ enum result input_cmd(struct global* global, char ch) {
             }
         case '\b':
         case 127:
-            if (global->nodes.cmd_selector->prev != NULL) {
-                nodes_delete(&global->nodes, global->nodes.cmd_selector->prev);
+            if (global->nodes.cmd_itr->prev != NULL) {
+                nodes_delete(&global->nodes, global->nodes.cmd_itr->prev);
             }
             return ok;
         default:
-            nodes_insert(&global->nodes, global->nodes.cmd_selector, ch);
+            nodes_insert(&global->nodes, global->nodes.cmd_itr, ch);
             return ok;
     }
 }
@@ -330,12 +330,12 @@ void input_insert(struct global* global, char ch) {
             return;
         case '\b':
         case 127:
-            if (global->nodes.insert_selector->prev != NULL) {
-                nodes_delete(&global->nodes, global->nodes.insert_selector->prev);
+            if (global->nodes.text_itr->prev != NULL) {
+                nodes_delete(&global->nodes, global->nodes.text_itr->prev);
             }
             return;
         default:
-            nodes_insert(&global->nodes, global->nodes.insert_selector, ch);
+            nodes_insert(&global->nodes, global->nodes.text_itr, ch);
             return;
     }
 }
@@ -420,10 +420,10 @@ void draw_cmd(struct node* cmd_selector) {
 void draw_update(struct global* global) {
     draw_clear();
     draw_info(global->mode);
-    draw_message(global->nodes.message_selector);
-    draw_cmd(global->nodes.cmd_selector);
+    draw_message(global->nodes.message_itr);
+    draw_cmd(global->nodes.cmd_itr);
     write(STDOUT_FILENO, "\n", 1);
-    draw_text(global->nodes.insert_selector, global->term.ws.ws_row - 2, true);
+    draw_text(global->nodes.text_itr, global->term.ws.ws_row - 2, true);
 }
 void draw_deinit() {
     draw_clear();
