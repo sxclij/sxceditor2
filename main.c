@@ -373,7 +373,7 @@ void draw_clear() {
 void draw_text(struct node* this, uint32_t size_y, enum bool is_cursor) {
     struct node* itr = this;
     uint32_t i;
-    for (i = 0; itr->prev != NULL && i < size_y / 3 + 1;) {
+    for (i = 0; itr->prev != NULL && i < size_y / 2 + 1;) {
         itr = itr->prev;
         if (itr->ch == '\n') {
             i++;
@@ -423,7 +423,7 @@ void draw_update(struct global* global) {
     draw_message(global->nodes.message_itr);
     draw_cmd(global->nodes.cmd_itr);
     write(STDOUT_FILENO, "\n", 1);
-    draw_text(global->nodes.text_itr, global->term.ws.ws_row - 2, true);
+    draw_text(global->nodes.text_itr, global->term.ws.ws_row - 3, true);
 }
 void draw_deinit() {
     draw_clear();
