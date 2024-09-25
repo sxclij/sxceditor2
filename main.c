@@ -423,7 +423,7 @@ void draw_update(struct global* global) {
     draw_message(global->nodes.message_itr);
     draw_cmd(global->nodes.cmd_itr);
     write(STDOUT_FILENO, "\n", 1);
-    draw_text(global->nodes.text_itr, global->term.ws.ws_row - 3, true);
+    draw_text(global->nodes.text_itr, global->term.ws.ws_row - 2, true);
 }
 void draw_deinit() {
     draw_clear();
