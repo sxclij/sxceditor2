@@ -2,12 +2,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/ioctl.h>
-#include <termios.h>
 #include <unistd.h>
 
-#define nodes_capacity (1<<18)
-#define term_capacity (1<<16)
-#define buf_capacity (1<<16)
+#define nodes_capacity (1 << 18)
+#define term_capacity (1 << 16)
+#define buf_capacity (1 << 16)
+
+#define ICANON 0000002
+#define ECHO 0000010
+#define VMIN 6
+#define VTIME 5
+#define TCGETS 0x5401
+#define TCSETS 0x5402
 
 enum result {
     ok = 0,
@@ -22,6 +28,14 @@ enum mode {
     mode_insert,
     mode_cmd,
     mode_raw,
+};
+struct termios {
+    unsigned int c_iflag;
+    unsigned int c_oflag;
+    unsigned int c_cflag;
+    unsigned int c_lflag;
+    unsigned char c_line;
+    unsigned char c_cc[32];
 };
 struct term {
     struct winsize ws;
@@ -49,18 +63,17 @@ uint32_t term_read(char* dst) {
     return read(STDIN_FILENO, dst, term_capacity);
 }
 void term_deinit(struct term* term) {
-    tcsetattr(STDIN_FILENO, TCSANOW, &term->old);
 }
 void term_update(struct term* term) {
     ioctl(STDIN_FILENO, TIOCGWINSZ, &term->ws);
 }
-void term_init(struct term* term) {
-    tcgetattr(STDIN_FILENO, &term->old);
-    term->new = term->old;
-    term->new.c_lflag &= ~(ICANON | ECHO);
-    term->new.c_cc[VMIN] = 0;
-    term->new.c_cc[VTIME] = 0;
-    tcsetattr(STDIN_FILENO, TCSANOW, &term->new);
+void term_init(struct term* terma) {
+    struct termios term;
+    ioctl(STDIN_FILENO, TCGETS, &term);
+    term.c_lflag &= ~(ICANON | ECHO);
+    term.c_cc[VMIN] = 1;
+    term.c_cc[VTIME] = 0;
+    ioctl(STDIN_FILENO, TCSETS, &term);
 }
 
 void nodes_free(struct nodes* nodes, struct node* this) {
@@ -155,8 +168,8 @@ void nodes_to_str(char* dst, struct node* src) {
 }
 void nodes_init(struct nodes* nodes) {
     nodes->passive_selector = nodes->data;
-    for(uint32_t i = 0; i < nodes_capacity-1; i++) {
-        nodes_free(nodes, &nodes->data[i+1]);
+    for (uint32_t i = 0; i < nodes_capacity - 1; i++) {
+        nodes_free(nodes, &nodes->data[i + 1]);
     }
     nodes->insert_selector = nodes_allocate(nodes);
     nodes->insert_selector->ch = '\0';
