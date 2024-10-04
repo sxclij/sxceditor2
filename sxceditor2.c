@@ -39,8 +39,6 @@ struct termios {
 };
 struct term {
     struct winsize ws;
-    struct termios old;
-    struct termios new;
 };
 struct node {
     struct node* next;
@@ -447,12 +445,12 @@ enum result update(struct global* global) {
     return ok;
 }
 void init(struct global* global) {
-    term_init(&global->term);
+    term_init();
     nodes_init(&global->nodes);
 }
 void deinit(struct global* global) {
     draw_deinit();
-    term_deinit(&global->term);
+    term_deinit();
 }
 int main() {
     static struct global global;
