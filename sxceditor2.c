@@ -1,5 +1,5 @@
+#include <fcntl.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -187,33 +187,41 @@ void nodes_init(struct nodes* nodes) {
     nodes->message_selector->next = NULL;
 }
 enum result file_read(struct nodes* nodes, struct node* dst, const char* path) {
-    FILE* fp = fopen(path, "r");
-    if (fp == NULL) {
+    int fd = open(path, O_RDONLY);
+    if (fd == -1) {
         return err;
     }
-    while (1) {
-        int ch = fgetc(fp);
-        if (ch == EOF) {
-            break;
-        }
-        nodes_insert(nodes, dst, ch);
+    char buffer[1];
+    uint32_t bytes_read;
+    while ((bytes_read = read(fd, buffer, 1)) > 0) {
+        nodes_insert(nodes, dst, buffer[0]);
     }
-    fclose(fp);
+    if (bytes_read == -1) {
+        close(fd);
+        return err;
+    }
+    close(fd);
     return ok;
 }
+
 enum result file_write(const char* path, struct node* src) {
-    struct node* itr = src;
-    FILE* fp = fopen(path, "w");
-    if (fp == NULL) {
+    int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd == -1) {
         return err;
     }
+    struct node* itr = src;
     while (itr->prev != NULL) {
         itr = itr->prev;
     }
+    char buffer[1];
     for (; itr->next != NULL; itr = itr->next) {
-        fputc(itr->ch, fp);
+        buffer[0] = itr->ch;
+        if (write(fd, buffer, 1) != 1) {
+            close(fd);
+            return err;
+        }
     }
-    fclose(fp);
+    close(fd);
     return ok;
 }
 enum result cmd_openfile(struct nodes* nodes, const char* path) {
