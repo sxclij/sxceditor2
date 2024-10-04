@@ -62,12 +62,16 @@ struct global {
 uint32_t term_read(char* dst) {
     return read(STDIN_FILENO, dst, term_capacity);
 }
-void term_deinit(struct term* term) {
+void term_deinit() {
+    struct termios term;
+    ioctl(STDIN_FILENO, TCGETS, &term);
+    term.c_lflag |= (ICANON | ECHO);
+    ioctl(STDIN_FILENO, TCSETS, &term);
 }
 void term_update(struct term* term) {
     ioctl(STDIN_FILENO, TIOCGWINSZ, &term->ws);
 }
-void term_init(struct term* terma) {
+void term_init() {
     struct termios term;
     ioctl(STDIN_FILENO, TCGETS, &term);
     term.c_lflag &= ~(ICANON | ECHO);
